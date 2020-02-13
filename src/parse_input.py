@@ -14,12 +14,9 @@ def parse_input(input):
     tree = ET.parse(input)
     root = tree.getroot()
 
-    nodes = get_nodes_list(root)
+    # nodes = get_nodes_list(root)
 
     metadata_full = dump_metadata()
-    metadata = metadata_full["annotations"]
-    specs = metadata_full["specs"]
-
     archetype_commods = build_facility_dictionary(metadata_full)
 
     return archetype_commods

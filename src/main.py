@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-from apa import (APA, Graph, Vertex)
 import parse_input as pi
 
 

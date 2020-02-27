@@ -5,6 +5,7 @@ import json
 import xml.etree.ElementTree as ET
 import cyclus
 from cyclus import lib
+import pprint
 
 
 def parse_input(input):
@@ -49,7 +50,7 @@ def dump_metadata():
     return metadata
 
 
-def get_commod_alias(metadata, uitype, agent):
+def get_commod_names(metadata, uitype, agent):
     '''
     aliases = get_commod_alias(metadata, uitype, agent)
     Returns all archetypes and their aliases for a given uitype
@@ -70,10 +71,21 @@ def get_commod_alias(metadata, uitype, agent):
     for var in agent_data:
         for param in agent_data[var]:
             if param == "uitype" and uitype in agent_data[var][param]:
-                if isinstance(agent_data[var]["alias"], cyclus.jsoncpp.Value):
-                    aliases.extend(agent_data[var]["alias"])
-                elif isinstance(agent_data[var]["alias"], str):
-                    aliases.append(agent_data[var]["alias"])
+                aliases.append(var)
+
+    return aliases
+
+
+def commodity_aliases(data, aliases):
+    '''
+    Usage: run in get_commod_alias
+    aliases = commodity_aliases(data, aliases)
+    '''
+
+    if isinstance(data, cyclus.jsoncpp.Value):
+        aliases.extend(data)
+    elif isinstance(data, str):
+        aliases.append(data)
 
     return aliases
 
@@ -89,13 +101,13 @@ def build_facility_dictionary(metadata_full):
     archetype_commods = {}
 
     for archetype in specs:
-        incommod_aliases = get_commod_alias(metadata, "incommodity", archetype)
-        outcommod_aliases = get_commod_alias(metadata, "outcommodity",
+        incommod_aliases = get_commod_names(metadata, "incommodity", archetype)
+        outcommod_aliases = get_commod_names(metadata, "outcommodity",
                                              archetype)
 
         archetype_commods.update({archetype: (incommod_aliases,
                                               outcommod_aliases)})
 
-    print(archetype_commods)
+    pprint.pprint(archetype_commods)
 
     return archetype_commods

@@ -166,7 +166,7 @@ def find_commod(archetype_tag, commod_tags):
     metadata_full = dump_metadata()
     archetype_commods = build_facility_dictionary(metadata_full)
 
-    return
+    return archetype_commods
 
 
 def get_nodes_list(root):

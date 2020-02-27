@@ -18,7 +18,7 @@ def main(args=None):
     input_file = 'source_3_sink_1.xml'
 
     if (input_file) is not None:
-        pi.parse_input(input_file)
+        commodity_dictionary = pi.parse_input(input_file)
     else:
         print('No input file given!')
 

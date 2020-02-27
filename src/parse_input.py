@@ -20,7 +20,7 @@ def parse_input(input):
     metadata_full = dump_metadata()
     archetype_commods = build_facility_dictionary(metadata_full)
 
-    return
+    return archetype_commods
 
 
 def get_nodes_list(root):

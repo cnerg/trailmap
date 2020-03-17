@@ -48,9 +48,11 @@ def get_facility_names(root):
         - facilities: a list of facility names specified in the input file
     '''
 
-    facilities = []
-    for facility in root.findall('./facility/name'):
-        facilities.append(facility.text)
+    facilities = {}
+    for facility in root.findall('./facility'):
+        facility_name = facility.find('name').text
+        facility_archetype = facility.find('config/').tag
+        facilities[facility_name] = facility_archetype
 
     return facilities
 

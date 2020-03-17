@@ -20,7 +20,10 @@ def main(args=None):
 
     if (input_file) is not None:
         commodity_dictionary = cd.build_commod_dictionary()
+<<<<<<< HEAD
         facility_dictionary = pi.parse_input(input_file, commodity_dictionary)
+=======
+>>>>>>> move commodity dictionary to own file, parse independently of Cyclus input file
     else:
         print('No input file given!')
 

@@ -179,6 +179,7 @@ def get_nodes_list(root):
         nodes.append(facility.text)
 
     return nodes
+<<<<<<< HEAD
 
 
 def dump_metadata():
@@ -247,3 +248,5 @@ def build_facility_dictionary(metadata_full):
 
     return archetype_commods
 >>>>>>> build commodity dictiornary from available cyclus archetypes
+=======
+>>>>>>> move commodity dictionary to own file, parse independently of Cyclus input file

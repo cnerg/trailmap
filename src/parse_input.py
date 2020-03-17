@@ -83,3 +83,45 @@ def archetypes_in_input_file(root):
         archetypes_in_input[name] = library_and_archetype
 
     return archetypes_in_input
+
+
+def facility_commods(facilities, archetypes_in_input, commodity_dictionary):
+    '''
+    facility_dictionary = facility_commods(facilities, archetypes_in_input,
+                                           commodity_dictionary)
+
+    facility_dictionary takes the list of facilities in an input file, connects
+    them to the Cyclus module and archetypes they are defined from, and finds
+    the commodities in the input file that are defined properly according to
+    the archetype metadata
+
+    inputs:
+        - facilities: a list of facility names specified in the input file
+        - archetypes_in_input: a dictionary with format
+                               {'archetype' : 'module::archetype'}
+        - commodity_dictionary: a dictionary with the Cyclus archetypes
+        available and the archetype tags of their incommodities and
+        outcommodities
+
+    outputs:
+        - facility_dictionary: a dictionary of each facility and its
+        incommodities and outcommodities. format:
+        {'facility' : (['incommodities'], ['outcommodities'])}
+    '''
+
+    facility_dictionary = {}
+
+    for facility in facilities:
+        desired_archetype = facilities[facility]
+        desired_module = archetypes_in_input[desired_archetype]
+        commodities = commodity_dictionary[desired_module]
+
+        in_commod_tags = commodities[0]
+        out_commod_tags = commodities[1]
+
+        # find facility in input file
+        # go into <archetype_name> tag
+        # find tags below that are in in_commod_tags
+        # save text (or, text in <val>...) to in_commods
+
+    return facility_dictionary

@@ -20,6 +20,7 @@ def main(args=None):
 
     if (input_file) is not None:
         commodity_dictionary = cd.build_commod_dictionary()
+        facility_dictionary = pi.parse_input(input_file, commodity_dictionary)
     else:
         print('No input file given!')
 

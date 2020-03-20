@@ -25,36 +25,67 @@ def parse_input(input, commodity_dictionary):
     tree = ET.parse(input)
     root = tree.getroot()
 
-    facilities = get_facility_names(root)
     archetypes_in_input = archetypes_in_input_file(root)
-
-    facility_dictionary = facility_commods(facilities, archetypes_in_input,
-                                           commodity_dictionary)
+    facility_dictionary = get_facility_and_commod_names(root,
+                                                        archetypes_in_input,
+                                                        commodity_dictionary)
 
     return facility_dictionary
 
 
-def get_facility_names(root):
+def get_facility_and_commod_names(root, archetypes_in_input,
+                                  commodity_dictionary):
     '''
-    facilities = get_facility_names(root)
+    facility_dict = get_facility_and_commod_names(root, archetypes_in_input,
+                                    commodity_dictionary)
 
-    get_facility_names reads a Cyclus input file element tree and finds the
-    facility names for each facility specified in a <facility> tag.
+    get_facility_and_commodity_names reads a Cyclus input file element tree and
+    finds the facility names for each facility specified in a <facility> tag.
+    Then, using the facility archetype and module, the input and output
+    commodities are retrieved.
 
     inputs:
         - root: an xml.etree.ElementTree root of a Cyclus input file tree
+        - archetypes_in_input: a dictionary with format
+                               {'archetype' : 'module::archetype'}
+        - commodity_dictionary: a dictionary with the Cyclus archetypes
+        available and the archetype tags of their incommodities and
+        outcommodities
 
     outputs:
-        - facilities: a list of facility names specified in the input file
+        - facility_dict: a dictionary of each facility and its
+        incommodities and outcommodities. format:
+        {'facility' : (['incommodities'], ['outcommodities'])}
     '''
 
-    facilities = {}
+    facility_dict = {}
+
     for facility in root.findall('./facility'):
         facility_name = facility.find('name').text
         facility_archetype = facility.find('config/').tag
-        facilities[facility_name] = facility_archetype
+        facility_module = archetypes_in_input[facility_archetype]
+        commodities = commodity_dictionary[facility_module]
 
-    return facilities
+        in_commod_tags = commodities[0]
+        out_commod_tags = commodities[1]
+
+        facility_in_commods = []
+        facility_out_commods = []
+
+        for archetype_tag in facility.find('.config/' + facility_archetype):
+
+            in_commods = find_commod(archetype_tag, in_commod_tags)
+            if in_commods is not None:
+                facility_in_commods.extend(in_commods)
+
+            out_commods = find_commod(archetype_tag, out_commod_tags)
+            if out_commods is not None:
+                facility_out_commods.extend(out_commods)
+
+        facility_dict[facility_name] = (facility_in_commods,
+                                        facility_out_commods)
+
+    return facility_dict
 
 
 def archetypes_in_input_file(root):
@@ -85,43 +116,38 @@ def archetypes_in_input_file(root):
     return archetypes_in_input
 
 
-def facility_commods(facilities, archetypes_in_input, commodity_dictionary):
+def find_commod(archetype_tag, commod_tags):
     '''
-    facility_dictionary = facility_commods(facilities, archetypes_in_input,
-                                           commodity_dictionary)
+    commods = find_commod(archetype_tag, commod_tags)
 
-    facility_dictionary takes the list of facilities in an input file, connects
-    them to the Cyclus module and archetypes they are defined from, and finds
-    the commodities in the input file that are defined properly according to
-    the archetype metadata
+    find_commod takes a single archetype tag within a Cyclus facility and
+    searches for commodities within an acceptable list of commodity tags. Finds
+    commodities whether they are text between the commodity tags e.g.
+    <commod_tag>commodity</commod_tag> or within a child val tag
+    e.g. <commod_tag>
+            <val>commodity</val>
+        </commod_tag>
+    Returns None if none found
 
     inputs:
-        - facilities: a list of facility names specified in the input file
-        - archetypes_in_input: a dictionary with format
-                               {'archetype' : 'module::archetype'}
-        - commodity_dictionary: a dictionary with the Cyclus archetypes
-        available and the archetype tags of their incommodities and
-        outcommodities
+        - archetype_tag: an xml.etree.ElementTree.Element of a single archetype
+        tag
+        - commod_tags: a list of acceptable commodity tags for the given
+        module and facility
 
     outputs:
-        - facility_dictionary: a dictionary of each facility and its
-        incommodities and outcommodities. format:
-        {'facility' : (['incommodities'], ['outcommodities'])}
+        - commods: a single commodity as a string or a list of commodities
     '''
 
-    facility_dictionary = {}
+    commod_list = []
 
-    for facility in facilities:
-        desired_archetype = facilities[facility]
-        desired_module = archetypes_in_input[desired_archetype]
-        commodities = commodity_dictionary[desired_module]
+    if archetype_tag.tag in commod_tags:
+        vals = archetype_tag.findall('./')
+        if vals:
+            for commod in vals:
+                commod_list.append(commod.text)
+        else:
+            commod_list.append(archetype_tag.text)
+        return commod_list
 
-        in_commod_tags = commodities[0]
-        out_commod_tags = commodities[1]
-
-        # find facility in input file
-        # go into <archetype_name> tag
-        # find tags below that are in in_commod_tags
-        # save text (or, text in <val>...) to in_commods
-
-    return facility_dictionary
+    return

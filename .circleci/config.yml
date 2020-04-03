@@ -1,0 +1,17 @@
+version: 2.1
+
+jobs:
+  test_py3:
+    docker:
+      - image: ubuntu/18.04:latest
+     steps:
+      - checkout
+      - run: pip install -e . --user
+      - run:
+          command: pytest
+
+
+workflows:
+  build:
+    jobs:
+      - test_py3

@@ -116,7 +116,7 @@ def get_facility_and_commod_names(root, archetypes_in_input,
     return facility_dict
 
 
-def archetypes_in_input_file(root):
+def get_archetypes_in_input(root):
     '''
     input_archetypes = archetypes_in_input_file(root)
 
@@ -132,11 +132,11 @@ def archetypes_in_input_file(root):
     '''
 
     archetypes_in_input = {}
-    for archetypes in root.findall('./archetypes/'):
+    for archetype in root.findall('./archetypes/'):
         for library in archetypes.findall('./lib'):
             lib = library.text
-        for name in archetypes.findall('./name'):
-            name = name.text
+        for archetypename in archetypes.findall('./name'):
+            name = archetypename.text
 
         library_and_archetype = (':%s:%s' % (lib, name))
         archetypes_in_input[name] = library_and_archetype

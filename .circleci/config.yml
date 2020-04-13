@@ -3,15 +3,15 @@ version: 2.1
 jobs:
   test_py3:
     docker:
-      - image: ubuntu/18.04:latest
-     steps:
+      - image: cyclus/cycamore:latest
+    steps:
       - checkout
+      - run: apt-get update
       - run: pip install -e . --user
-      - run:
-          command: pytest
-
+      - run: pip install -U pytest
+      - run: pytest
 
 workflows:
-  build:
+  testing:
     jobs:
       - test_py3

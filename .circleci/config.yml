@@ -1,0 +1,17 @@
+version: 2.1
+
+jobs:
+  test_py3:
+    docker:
+      - image: cyclus/cycamore:latest
+    steps:
+      - checkout
+      - run: apt-get update
+      - run: pip install -e . --user
+      - run: pip install -U pytest
+      - run: pytest
+
+workflows:
+  testing:
+    jobs:
+      - test_py3

@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - run: pip install -U pytest
-      - run: pytest
+      - run: python -m pytest
 
 workflows:
   testing:

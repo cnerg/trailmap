@@ -1,4 +1,4 @@
-import src.commodity_dictionary as cd
+import trailmap.commodity_dictionary as cd
 import pytest
 import json
 

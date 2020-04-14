@@ -6,8 +6,6 @@ jobs:
       - image: cyclus/cycamore:latest
     steps:
       - checkout
-      - run: apt-get update
-      - run: pip install -e . --user
       - run: pip install -U pytest
       - run: pytest
 

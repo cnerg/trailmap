@@ -4,6 +4,7 @@ import subprocess
 import json
 import xml.etree.ElementTree as ET
 import cyclus
+<<<<<<< HEAD
 
 
 def parse_input(input, commodity_dictionary):
@@ -20,11 +21,19 @@ def parse_input(input, commodity_dictionary):
         - facility_dictionary: a dictionary of each facility and its
         incommodities and outcommodities. format:
         {'facility' : (['incommodities'], ['outcommodities'])}
+=======
+from cyclus import lib
+
+
+def parse_input(input):
+    '''
+>>>>>>> build commodity dictiornary from available cyclus archetypes
     '''
 
     tree = ET.parse(input)
     root = tree.getroot()
 
+<<<<<<< HEAD
     archetypes_in_input = archetypes_in_input_file(root)
     facility_dictionary = get_facility_and_commod_names(root,
                                                         archetypes_in_input,
@@ -151,3 +160,90 @@ def find_commod(archetype_tag, commod_tags):
         return commod_list
 
     return
+=======
+    # nodes = get_nodes_list(root)
+
+    metadata_full = dump_metadata()
+    archetype_commods = build_facility_dictionary(metadata_full)
+
+    return
+
+
+def get_nodes_list(root):
+    '''
+    '''
+
+    nodes = []
+    for facility in root.findall('./facility/name'):
+        # print(facility.text)
+        nodes.append(facility.text)
+
+    return nodes
+
+
+def dump_metadata():
+    '''
+    metadata = dump_metadata()
+    Dumps Cyclus metadata via Cylus python interface and saves the output.
+    Requires a working Cyclus install.
+
+    output:
+        - metadata
+    '''
+
+    metadata = lib.discover_metadata_in_cyclus_path()
+
+    return metadata
+
+
+def get_commod_alias(metadata, uitype, agent):
+    '''
+    aliases = get_commod_alias(metadata, uitype, agent)
+    Returns all archetypes and their aliases for a given uitype
+
+    inputs:
+        - metadata
+        - uitype: a string. Example, "incommodity"
+        - agent: a string. Example, ":cycamore:Enrichment"
+
+    outputs:
+        - commods: a dictionary with archetypes as keys and a set of acceptable
+        aliases as the values
+    '''
+
+    agent_data = metadata[agent]["vars"]
+    aliases = []
+
+    for var in agent_data:
+        for param in agent_data[var]:
+            if param == "uitype" and uitype in agent_data[var][param]:
+                if isinstance(agent_data[var]["alias"], cyclus.jsoncpp.Value):
+                    aliases.extend(agent_data[var]["alias"])
+                elif isinstance(agent_data[var]["alias"], str):
+                    aliases.append(agent_data[var]["alias"])
+
+    return aliases
+
+
+def build_facility_dictionary(metadata_full):
+    '''
+    Traverses all
+    '''
+
+    metadata = metadata_full["annotations"]
+    specs = metadata_full["specs"]
+
+    archetype_commods = {}
+
+    for archetype in specs:
+        incommod_aliases = get_commod_alias(metadata, "incommodity", archetype)
+        outcommod_aliases = get_commod_alias(metadata, "outcommodity",
+                                             archetype)
+
+        archetype_commods.update({archetype: (incommod_aliases,
+                                              outcommod_aliases)})
+
+    print(archetype_commods)
+
+    return archetype_commods
+>>>>>>> build commodity dictiornary from available cyclus archetypes

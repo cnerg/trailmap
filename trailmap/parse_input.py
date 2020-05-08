@@ -53,21 +53,19 @@ def get_facility_and_commod_names(root, archetypes_in_input,
         facility_module = get_archetypes_in_input[facility_archetype]
         commodities = commodity_dictionary[facility_module]
 
-        in_commod_tags = commodities[0]
-        out_commod_tags = commodities[1]
-
-#     (in_commod_tags, out_commod_tags) = commodity_dictionary[facility_module]
+        (in_commod_tags,
+         out_commod_tags) = commodity_dictionary[facility_module]
 
         facility_in_commods = []
         facility_out_commods = []
 
-        for archetype_tag in facility.find('.config/' + facility_archetype):
+        for archetype_var in facility.find('.config/' + facility_archetype):
 
-            in_commods = find_commod(archetype_tag, in_commod_tags)
+            in_commods = find_commod(archetype_var, in_commod_tags)
             if in_commods is not None:
                 facility_in_commods.extend(in_commods)
 
-            out_commods = find_commod(archetype_tag, out_commod_tags)
+            out_commods = find_commod(archetype_var, out_commod_tags)
             if out_commods is not None:
                 facility_out_commods.extend(out_commods)
 

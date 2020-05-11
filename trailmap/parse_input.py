@@ -22,15 +22,15 @@ def parse_input(input, commodity_dictionary):
     tree = ET.parse(input)
     root = tree.getroot()
 
-    archetypes_in_input = get_archetypes_in_input(root)
+    input_archetypes = get_archetypes_in_input(root)
     facility_dictionary = get_facility_and_commod_names(root,
-                                                        archetypes_in_input,
+                                                        input_archetypes,
                                                         commodity_dictionary)
 
     return facility_dictionary
 
 
-def get_facility_and_commod_names(root, archetypes_in_input,
+def get_facility_and_commod_names(root, input_archetypes,
                                   commodity_dictionary):
     '''reads Cyclus input file element tree and finds the facility names for
     each facility specified in a <facility> tag. Uses the facility archetype
@@ -50,7 +50,7 @@ def get_facility_and_commod_names(root, archetypes_in_input,
     for facility in root.findall('./facility'):
         facility_name = facility.find('name').text
         facility_archetype = facility.find('config/').tag
-        facility_module = get_archetypes_in_input[facility_archetype]
+        facility_module = input_archetypes[facility_archetype]
         commodities = commodity_dictionary[facility_module]
 
         (in_commod_tags,

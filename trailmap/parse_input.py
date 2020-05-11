@@ -23,11 +23,11 @@ def parse_input(input, commodity_dictionary):
     root = tree.getroot()
 
     input_archetypes = get_archetypes_in_input(root)
-    facility_dictionary = get_facility_and_commod_names(root,
-                                                        input_archetypes,
+    [facility_dict_in,
+     facility_dict_out] = get_facility_and_commod_names(root, input_archetypes,
                                                         commodity_dictionary)
 
-    return facility_dictionary
+    return facility_dict_in, facility_dict_out
 
 
 def get_facility_and_commod_names(root, input_archetypes,
@@ -45,7 +45,8 @@ def get_facility_and_commod_names(root, input_archetypes,
         incommodities and outcommodities. format:
         {'facility' : (['incommodities'], ['outcommodities'])}
     '''
-    facility_dict = {}
+    facility_dict_in = {}
+    facility_dict_out = {}
 
     for facility in root.findall('./facility'):
         facility_name = facility.find('name').text
@@ -69,10 +70,10 @@ def get_facility_and_commod_names(root, input_archetypes,
             if out_commods is not None:
                 facility_out_commods.extend(out_commods)
 
-        facility_dict[facility_name] = (facility_in_commods,
-                                        facility_out_commods)
+        facility_dict_in[facility_name] = facility_in_commods
+        facility_dict_out[facility_name] = facility_out_commods
 
-    return facility_dict
+    return facility_dict_in, facility_dict_out
 
 
 def get_archetypes_in_input(root):

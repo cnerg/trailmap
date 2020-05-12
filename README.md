@@ -19,7 +19,7 @@ Install required python packags
 
 ## Installation
 
-run `python -m pip install -e . --user`
+run `python -m pip install . --user`
 
 ## Usage
 

@@ -7,7 +7,7 @@ This tool takes a Cyclus input file and conducts acquisition pathway analysis on
 * Python 3
 * [Cyclus](https://github.com/cyclus/cyclus)
 * [Cycamore](https://github.com/cyclus/cycamore)
-* NetworkX
+* [NetworkX](https://networkx.github.io/)
 
 Follow installation instructions from [Cyclus](https://github.com/cyclus/cyclus) and [Cycamore](https://github.com/cyclus/cycamore).
 

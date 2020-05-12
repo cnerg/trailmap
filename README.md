@@ -8,12 +8,14 @@ This tool takes a Cyclus input file and conducts acquisition pathway analysis on
 * [Cyclus](https://github.com/cyclus/cyclus)
 * [Cycamore](https://github.com/cyclus/cycamore)
 * [NetworkX](https://networkx.github.io/)
+* [PyGraphviz](https://pygraphviz.github.io/)
+* [pydot](https://github.com/pydot/pydot)
 
 Follow installation instructions from [Cyclus](https://github.com/cyclus/cyclus) and [Cycamore](https://github.com/cyclus/cycamore).
 
-Install NetworkX
+Install required python packags
 
-`python -m install networkx`
+`python -m install --user networkx pygraphviz pydot`
 
 ## Installation
 

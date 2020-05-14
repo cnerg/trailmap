@@ -1,0 +1,159 @@
+<!-- Mine, enrichment, reactor, clandestine enrichment plant -->
+
+<simulation>
+    <control>
+        <duration>120</duration>
+        <startmonth>1</startmonth>
+        <startyear>2020</startyear>
+    </control>
+
+    <archetypes>
+        <spec><lib>cycamore</lib><name>Sink</name></spec>
+        <spec><lib>cycamore</lib><name>Source</name></spec>
+        <spec><lib>cycamore</lib><name>Storage</name></spec>
+        <spec><lib>cycamore</lib><name>Reactor</name></spec>
+        <spec><lib>cycamore</lib><name>Enrichment</name></spec>
+        <spec><lib>agents</lib><name>NullRegion</name></spec>
+        <spec><lib>agents</lib><name>NullInst</name></spec>
+    </archetypes>
+
+    <facility>
+        <name>Mine</name>
+        <config>
+            <Source>
+                <outcommod>nat_u</outcommod>
+                <outrecipe>nat_u_recipe</outrecipe>
+                <throughput>1</throughput>
+            </Source>
+        </config>
+    </facility>
+
+    <facility>
+        <name>Enrich</name>
+        <config>
+            <Enrichment>
+                <feed_commod>nat_u</feed_commod>
+                <feed_recipe>nat_u_recipe</feed_recipe>
+                <product_commod>leu</product_commod>
+                <tails_commod>tails</tails_commod>
+                <max_enrich>0.2</max_enrich>
+                <swu_capacity>30</swu_capacity>
+            </Enrichment>
+        </config>
+    </facility>
+
+    <facility>
+        <name>ClandestineEnrich</name>
+        <config>
+            <Enrichment>
+                <feed_commod>leu</feed_commod>
+                <feed_recipe>leu_recipe</feed_recipe>
+                <product_commod>heu</product_commod>
+                <tails_commod>tails</tails_commod>
+            </Enrichment>
+        </config>
+    </facility>
+
+    <facility>
+        <name>Reactor</name>
+        <config>
+            <Reactor>
+                <fuel_incommods>leu</fuel_incommods>
+                <fuel_inrecipes>leu_recipe</fuel_inrecipes>
+                <fuel_outcommods>used_fuel</fuel_outcommods>
+                <fuel_outrecipes>used_fuel_recipe</fuel_outrecipes>
+                <assem_size>10</assem_size>
+                <n_assem_batch>1</n_assem_batch>
+                <n_assem_core>1</n_assem_core>
+            </Reactor>
+        </config>
+    </facility>
+
+    <facility>
+        <name>SpentFuelPool</name>
+        <config>
+            <Sink>
+                <in_commods>
+                    <val>used_fuel</val>
+                </in_commods>
+            </Sink>
+        </config>
+    </facility>
+
+    <facility>
+        <name>ClandestineSink</name>
+        <config>
+            <Sink>
+                <in_commods>
+                    <val>nat_u</val>
+                    <val>leu</val>
+                    <val>used_fuel</val>
+                    <val>heu</val>
+                </in_commods>
+            </Sink>
+        </config>
+    </facility>
+
+    <region>
+        <name>SingleRegion</name>
+        <config><NullRegion/></config>
+        <institution>
+            <name>SingleInstitution</name>
+            <initialfacilitylist>
+                <entry>
+                    <prototype>Source</prototype>
+                    <number>1</number>
+                </entry>
+                <entry>
+                    <prototype>Enrichment</prototype>
+                    <number>1</number>
+                </entry>
+                <entry>
+                    <prototype>Reactor</prototype>
+                    <number>1</number>
+                </entry>
+                <entry>
+                    <prototype>Sink</prototype>
+                    <number>1</number>
+                </entry>
+            </initialfacilitylist>
+            <config><Nullinst/></config>
+        </institution>
+    </region>
+
+    <recipe>
+        <name>nat_u</name>
+        <basis>mass</basis>
+        <nuclide>
+            <id>922350000</id>
+            <comp>0.7</comp>
+        </nuclide>
+        <nuclide>
+            <id>922380000</id>
+            <comp>99.3</comp>
+        </nuclide>
+    </recipe>
+
+    <recipe>
+        <name>leu_recipe</name>
+        <basis>mass</basis>
+        <nuclide>
+            <id>922350000</id>
+            <comp>5</comp>
+        </nuclide>
+        <nuclide>
+            <id>922380000</id>
+            <comp>95</comp>
+        </nuclide>
+    </recipe>
+
+    <recipe>
+        <name>used_fuel_recipe</name>
+        <basis>atom</basis>
+        <nuclide>
+            <id>10010000</id>
+            <comp>100</comp>
+        </nuclide>
+    </recipe>
+
+</simulation>

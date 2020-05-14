@@ -1,6 +1,6 @@
 import argparse
-import parse_input as pi
-import commodity_dictionary as cd
+import trailmap.parse_input as pi
+import trailmap.commodity_dictionary as cd
 
 
 def make_parser():

@@ -6,16 +6,13 @@ This tool takes a Cyclus input file and conducts acquisition pathway analysis on
 
 * Python 3
 * [Cyclus](https://github.com/cyclus/cyclus)
-* [Cycamore](https://github.com/cyclus/cycamore)
-* [NetworkX](https://networkx.github.io/)
-* [PyGraphviz](https://pygraphviz.github.io/)
-* [pydot](https://github.com/pydot/pydot)
 
-Follow installation instructions from [Cyclus](https://github.com/cyclus/cyclus) and [Cycamore](https://github.com/cyclus/cycamore).
+Follow installation instructions from [Cyclus](https://github.com/cyclus/cyclus).
 
-Install required python packags
 
-`python -m install --user networkx pygraphviz pydot`
+### Recommended Packages
+
+In addition to Cyclus, it is strongly recommended that the user install [Cycamore](https://github.com/cyclus/cycamore)
 
 ## Installation
 

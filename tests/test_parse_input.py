@@ -6,34 +6,36 @@ import xml.etree.ElementTree as ET
 def test_find_commod():
     tree = ET.parse('input/source_1_sink_1.xml')
     root = tree.getroot()
-    out_commod_tags = ['commodity']
-    commods = []
+    exp_out_commods = ['commodity']
+    obs_out_commods = []
     for archetype_var in root.find('./facility/config/Source'):
-        commods.extend(pi.find_commod(archetype_var, 'outcommod'))
+        obs_out_commods.extend(pi.find_commod(archetype_var, 'outcommod'))
 
-    assert out_commod_tags == commods
+    assert obs_out_commods == exp_out_commods
 
 
-def test_find_archetypes():
-    tree = ET.parse('input/source_3_sink_2.xml')
+@pytest.mark.parametrize("exp_archetypes, test_file",
+                         [({'Sink': ':cycamore:Sink',
+                            'Source': ':cycamore:Source',
+                            'NullRegion': ':agents:NullRegion',
+                            'NullInst': ':agents:NullInst'},
+                           'input/source_3_sink_2.xml'),
+                          ({'Sink': ':cycamore:Sink',
+                            'Source': ':cycamore:Source',
+                            'Storage': ':cycamore:Storage',
+                            'Reactor': ':cycamore:Reactor',
+                            'Enrichment': ':cycamore:Enrichment',
+
+                            'NullRegion': ':agents:NullRegion',
+                            'NullInst': ':agents:NullInst'},
+                           'input/toy_front_end.xml')])
+def test_find_archetypes(exp_archetypes, test_file):
+    tree = ET.parse(test_file)
     root = tree.getroot()
-    archetypes = {'Sink': ':cycamore:Sink', 'Source': ':cycamore:Source',
-                  'NullRegion': ':agents:NullRegion',
-                  'NullInst': ':agents:NullInst'}
-    assert archetypes == pi.get_archetypes_in_input(root)
 
+    obs_archetypes = pi.get_archetypes_in_input(root)
 
-def test_find_archetypes1():
-    tree = ET.parse('input/toy_front_end.xml')
-    root = tree.getroot()
-    archetypes = {'Sink': ':cycamore:Sink', 'Source': ':cycamore:Source',
-                  'Storage': ':cycamore:Storage',
-                  'Reactor': ':cycamore:Reactor',
-                  'Enrichment': ':cycamore:Enrichment',
-                  'NullRegion': ':agents:NullRegion',
-                  'NullInst': ':agents:NullInst'}
-
-    assert archetypes == pi.get_archetypes_in_input(root)
+    assert obs_archetypes == exp_archetypes
 
 
 def test_facility_dict_in():
@@ -42,12 +44,12 @@ def test_facility_dict_in():
     commod_dict = {':cycamore:Sink': (['in_commods'], []),
                    ':cycamore:Source': ([], ['outcommod'])}
     archetypes = {'Sink': ':cycamore:Sink', 'Source': ':cycamore:Source'}
-    [dict_in, dict_out] = pi.get_facility_and_commod_names(root,
-                                                           archetypes,
-                                                           commod_dict)
-    test_in = {'SomeSource': [], 'SomeSink': ['commodity']}
+    exp_in = {'SomeSource': [], 'SomeSink': ['commodity']}
 
-    assert dict_in == test_in
+    [obs_in, obs_out] = pi.get_facility_and_commod_names(root, archetypes,
+                                                         commod_dict)
+
+    assert obs_in == exp_in
 
 
 def test_facility_dict_out():
@@ -68,12 +70,12 @@ def test_facility_dict_out():
                   'Reactor': ':cycamore:Reactor',
                   'Enrichment': ':cycamore:Enrichment'}
 
-    [dict_in, dict_out] = pi.get_facility_and_commod_names(root,
-                                                           archetypes,
-                                                           commod_dict)
-    test_out = {'Mine': ['nat_u'], 'Enrich': ['leu', 'tails'],
-                'ClandestineEnrich': ['heu', 'tails'],
-                'Reactor': ['used_fuel'], 'SpentFuelPool': [],
-                'ClandestineSink': []}
+    exp_out = {'Mine': ['nat_u'], 'Enrich': ['leu', 'tails'],
+               'ClandestineEnrich': ['heu', 'tails'],
+               'Reactor': ['used_fuel'], 'SpentFuelPool': [],
+               'ClandestineSink': []}
 
-    assert dict_out == test_out
+    [obs_in, obs_out] = pi.get_facility_and_commod_names(root, archetypes,
+                                                         commod_dict)
+
+    assert obs_out == exp_out

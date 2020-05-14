@@ -16,7 +16,6 @@ def parse_input(input, commodity_dictionary):
         incommodities and outcommodities. format:
         {'facility' : (['incommodities'], ['outcommodities'])}
     '''
-
     tree = ET.parse(input)
     root = tree.getroot()
 

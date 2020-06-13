@@ -53,6 +53,10 @@ def get_facility_and_commod_names(root, input_archetypes,
             (facility_in_commods,
              facility_out_commods) = find_sep_commod(facility,
                                                      facility_archetype)
+        elif facility_module == ':cycamore:Mixer':
+            (facility_in_commods,
+             facility_out_commods) = find_mixer_commod(facility,
+                                                       facility_archetype)
         else:
             (in_tags, out_tags) = commodity_dictionary[facility_module]
             facility_in_commods = []
@@ -124,7 +128,6 @@ def find_sep_commod(facility, facility_archetype):
     '''
     in_tags = ['feed_commods']
     leftover_tags = ['leftover_commod']
-    out_tags = ["commod"]
 
     facility_in_commods = []
     facility_out_commods = []
@@ -136,5 +139,8 @@ def find_sep_commod(facility, facility_archetype):
         if archetype_var.tag == 'streams':
             for commod in archetype_var.findall('./item/commod'):
                 facility_out_commods.append(commod.text)
+        out_commods = find_commod(archetype_var, leftover_tags)
+        if out_commods is not None:
+            facility_out_commods.extend(out_commods)
 
     return facility_in_commods, facility_out_commods

@@ -1,0 +1,42 @@
+import networkx as nx
+from pprint import pprint
+
+
+def conduct_apa(facility_dict_in, facility_dict_out):
+    ''' '''
+    G = build_graph(facility_dict_in, facility_dict_out)
+
+    sources = list(node for node, in_deg in G.in_degree() if in_deg == 0)
+    sinks = list(node for node, out_deg in G.out_degree() if out_deg == 0)
+
+    print("\nSimple paths")
+    pathways = find_simple_paths(G, sources, sinks)
+    print(pathways)
+
+    return G, pathways
+
+
+def build_graph(facility_dict_in, facility_dict_out):
+    '''Builds NetworkX graph from Cyclus input file
+    '''
+    G = nx.MultiDiGraph()
+    G.add_nodes_from(facility_dict_in.keys())
+    for receiver in facility_dict_in:
+        for incommod in facility_dict_in[receiver]:
+            # find all facilities with that commod as an outcommod
+            for sender, outcommods in facility_dict_out.items():
+                if incommod in outcommods:
+                    G.add_edge(sender, receiver, commodity=incommod)
+    return G
+
+
+def find_simple_paths(G, sources, sinks):
+    ''' finds all simple paths between a given list of sources and targets
+    '''
+    pathways = set()
+    for source, sink in [(x, y) for x in sources for y in sinks]:
+        paths = list(nx.all_simple_paths(G, source=source, target=sink))
+        for path in paths:
+            pathways.add(tuple(path))
+
+    return pathways

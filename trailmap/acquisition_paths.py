@@ -21,12 +21,12 @@ def build_graph(facility_dict_in, facility_dict_out):
     '''
     G = nx.MultiDiGraph()
     G.add_nodes_from(facility_dict_in.keys())
-    for receiver in facility_dict_in:
-        for incommod in facility_dict_in[receiver]:
-            # find all facilities with that commod as an outcommod
-            for sender, outcommods in facility_dict_out.items():
-                if incommod in outcommods:
-                    G.add_edge(sender, receiver, commodity=incommod)
+    for receiver, incommods in facility_dict_in.items():
+        # find all facilities with that commod as an outcommod
+        for sender, outcommods in facility_dict_out.items():
+            connection = list(set(incommods).intersection(outcommods))
+            for commod in connection:
+                G.add_edge(sender, receiver, commodity=commod)
     return G
 
 

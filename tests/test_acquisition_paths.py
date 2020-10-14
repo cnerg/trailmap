@@ -13,8 +13,7 @@ def test_build_graph(name, edges, fd_in, fd_out, exp_paths):
     exp_G.add_edges_from(edges)
     obs_G = ap.build_graph(fd_in, fd_out)
 
-    edit_dist = nx.graph_edit_distance(exp_G, obs_G)
-    assert edit_dist == 0.0
+    assert nx.graph_edit_distance(exp_G, obs_G) == 0
 
 
 @pytest.mark.parametrize("name, edges, fd_in, fd_out, exp_paths", testdata)

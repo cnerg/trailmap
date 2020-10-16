@@ -9,9 +9,7 @@ def conduct_apa(facility_dict_in, facility_dict_out):
     sources = list(node for node, in_deg in G.in_degree() if in_deg == 0)
     sinks = list(node for node, out_deg in G.out_degree() if out_deg == 0)
 
-    print("\nSimple paths")
     pathways = find_simple_paths(G, sources, sinks)
-    print(pathways)
 
     return G, pathways
 
@@ -24,8 +22,7 @@ def build_graph(facility_dict_in, facility_dict_out):
     for receiver, incommods in facility_dict_in.items():
         # find all facilities with that commod as an outcommod
         for sender, outcommods in facility_dict_out.items():
-            connection = list(set(incommods).intersection(outcommods))
-            for commod in connection:
+            for commod in set(incommods).intersection(outcommods):
                 G.add_edge(sender, receiver, commodity=commod)
     return G
 
@@ -35,8 +32,14 @@ def find_simple_paths(G, sources, sinks):
     '''
     pathways = set()
     for source, sink in [(x, y) for x in sources for y in sinks]:
-        paths = list(nx.all_simple_paths(G, source=source, target=sink))
-        for path in paths:
-            pathways.add(tuple(path))
+        pathways.update({tuple(path) for path in nx.all_simple_paths(
+            G, source=source, target=sink)})
 
     return pathways
+
+
+def print_acquisition_paths(pathways):
+    print("\nSimple paths")
+    pprint(pathways)
+
+    return

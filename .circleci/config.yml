@@ -1,17 +1,16 @@
 version: 2.1
-orbs:
-  coveralls: coveralls/coveralls@1.0.6
 jobs:
   test_py3:
     docker:
       - image: cyclus/cycamore:latest
     steps:
       - checkout
-      - run: pip install -U pytest networkx matplotlib scipy coverage npm
+      - run: pip install -U pytest networkx matplotlib scipy coverage
+      - run: pip install -U coveralls PyYAML
       - run: coverage run --source=./trailmap/ -m pytest
       - run: coverage report
       - run: coverage html
-      - coveralls/upload
+      - run: coveralls
 
 workflows:
   testing:

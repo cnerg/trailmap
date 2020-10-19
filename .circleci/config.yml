@@ -7,7 +7,7 @@ jobs:
       - image: cyclus/cycamore:latest
     steps:
       - checkout
-      - run: pip install -U pytest networkx matplotlib scipy coverage
+      - run: pip install -U pytest networkx matplotlib scipy coverage coveralls
       - run: coverage run --source=./trailmap/ -m pytest
       - run: coverage report
       - run: coverage html

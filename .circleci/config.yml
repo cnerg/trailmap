@@ -6,7 +6,7 @@ jobs:
       - image: cyclus/cycamore:latest
     steps:
       - checkout
-      - run: pip install -U pytest
+      - run: pip install -U pytest networkx matplotlib scipy
       - run: python -m pytest
 
 workflows:

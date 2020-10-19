@@ -9,6 +9,10 @@ This tool takes a Cyclus input file and conducts acquisition pathway analysis on
 
 Follow installation instructions from [Cyclus](https://github.com/cyclus/cyclus).
 
+* [NetworkX](https://networkx.github.io/)
+
+run `pip install --user networkx`
+
 ### Recommended Packages
 
 In addition to Cyclus, it is strongly recommended that the user install [Cycamore](https://github.com/cyclus/cycamore)

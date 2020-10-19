@@ -1,4 +1,5 @@
 # trailmap
+[![Coverage Status](https://coveralls.io/repos/github/CNERG/trailmap/badge.svg?branch=main)](https://coveralls.io/github/CNERG/trailmap?branch=main)
 
 This tool takes a Cyclus input file and conducts acquisition pathway analysis on the facilities specified.
 

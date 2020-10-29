@@ -4,7 +4,7 @@ import trailmap.pathway_analysis as pa
 import networkx as nx
 import pytest
 from tests.pa_data import testdata
-# name, short, long, semiconnect, hierarchy, edges, paths
+# name, short, long, semiconnect, hierarchy, edges, paths, sc
 
 
 def test_ndp():
@@ -49,9 +49,9 @@ def test_maximum_flow_multipaths():
 
 
 @pytest.mark.parametrize("name, short, long, semiconnect, hierarchy, edges, \
-                         paths", testdata)
+                         paths, sc", testdata)
 def test_gp_semiconnected(name, short, long, semiconnect, hierarchy, edges,
-                          paths, capsys):
+                          paths, sc, capsys):
     G = nx.MultiDiGraph()
     G.add_edges_from(edges)
 
@@ -60,9 +60,9 @@ def test_gp_semiconnected(name, short, long, semiconnect, hierarchy, edges,
 
 
 @pytest.mark.parametrize("name, short, long, semiconnect, hierarchy, edges, \
-                         paths", testdata)
+                         paths, sc", testdata)
 def test_gp_hierarchy(name, short, long, semiconnect, hierarchy, edges, paths,
-                      capsys):
+                      sc, capsys):
     G = nx.MultiDiGraph()
     G.add_edges_from(edges)
 
@@ -70,12 +70,10 @@ def test_gp_hierarchy(name, short, long, semiconnect, hierarchy, edges, paths,
     assert pytest.approx(obs_hierarchy) == hierarchy
 
 
-@pytest.fixture
-def data():
-    return testdata
-
-
-def test_find_paths_with_source(data):
+@pytest.mark.parametrize("name, short, long, semiconnect, hierarchy, edges, \
+                         paths, sc", testdata)
+def test_find_paths_with_source(name, short, long, semiconnect, hierarchy,
+                                edges, paths, sc, capsys):
     exp_subset = {("SourceA", "Facility", "SinkA"),
                   ("SourceA", "Facility", "SinkB")}
     pathways = testdata[2][6]
@@ -85,7 +83,10 @@ def test_find_paths_with_source(data):
     assert obs_subset == exp_subset
 
 
-def test_find_paths_with_sink(data):
+@pytest.mark.parametrize("name, short, long, semiconnect, hierarchy, edges, \
+                         paths, sc", testdata)
+def test_find_paths_with_sink(name, short, long, semiconnect, hierarchy,
+                            edges, paths, sc, capsys):
     exp_subset = {("SourceA", "Facility", "SinkB"),
                   ("SourceB", "Facility", "SinkB")}
     pathways = testdata[2][6]

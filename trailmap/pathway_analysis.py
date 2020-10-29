@@ -3,25 +3,6 @@ import matplotlib.pyplot as plt
 from pprint import pprint
 
 
-def draw_graph(G):
-    pos = nx.drawing.nx_pydot.graphviz_layout(G, prog=dot)
-
-    plt.figure()
-    nx.draw_networkx_nodes(G, pos)
-    nx.draw_networkx_labels(G, pos)
-    nx.draw_networkx_edges(G, pos)
-
-    return
-
-
-def draw_path(G, path):
-    draw_graph(G)
-    pos = nx.drawing.nx_pydot.graphviz_layout(G)
-    nx.draw_networkx_nodes(G, pos=pos, nodelist=path, node_color="red")
-    plt.show()
-    return
-
-
 def print_graph_parameters(G, pathways):
     '''Prints a set of parameters characterizing the graph
     '''
@@ -68,8 +49,51 @@ def find_maximum_flow(G, s, t):
 
 
 def find_simple_cycles(G):
-    sc = list(nx.simple_cycles(G))
+    '''finds cycles in a graph and returns them in a list of lists
+    '''
+    sc = set()
+    sc.update(tuple(cycle) for cycle in nx.simple_cycles(G))      
+
     return sc
+
+
+def splice_cycles_into_pathways(pathways, sc):
+    pathways_with_cycles = set()
+    # look at all pathways and simple cycles
+    for path, loop in [(x,y) for x in pathways for y in sc]:
+        # check if an individual path contains an individual known loop
+        (sub_list, pos) = check_if_sublist(path, loop)
+        if sub_list:
+            # make path into list, which is mutable
+            p = list(path)
+            #a dd a single loop
+            p[pos:pos] = loop
+            # note pathway to new list of pathways containing cycles
+            pathways_with_cycles.update(p)
+
+    return pathways_with_cycles
+
+
+def check_if_sublist(path, steps):
+    '''Checks to see if a pathway contains each element in steps (list)
+    in order. Returns True/False and the position where the cycle should be
+    inserted. If False, returns -1
+    '''
+    pos = -1
+    sub_list = False
+
+    for i in range(len(path) - len(steps)+1):
+        if path[i] == steps[0]:
+            n = 1
+            while (n < len(steps) and path[i+n] == steps[n]):
+                n+=1
+            
+            if n == len(steps):
+                sub_list = True
+                pos = i + len(steps)
+                break
+
+    return sub_list, pos
 
 
 def find_paths_with_source(pathways, source):

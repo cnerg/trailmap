@@ -1,14 +1,13 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-from pprint import pprint
 
 
-def print_graph_parameters(G, pathways):
+def print_graph_parameters(G, pathways): # pragma: no cover
     '''Prints a set of parameters characterizing the graph
     '''
     print('\nGRAPH PARAMETERS')
 
-    num_paths = len(pathways)
+    num_paths = get_number_of_pathways(pathways)
     print("A total of " + str(num_paths) + " pathways were generated")
 
     (shortest_length, shortest) = get_shortest_path(pathways)
@@ -28,37 +27,93 @@ def print_graph_parameters(G, pathways):
     hierarchy = nx.flow_hierarchy(G)
     print("\nGraph hierarchy is " + "{:.3f}".format(hierarchy))
 
-    return num_paths, semiconnected, hierarchy
+    return
 
 
 def find_node_disjoint_paths(G, s, t):
+    '''Returns a set of paths that share a source and target node, but have
+    exactly 0 shared edges
+    '''
     ndp = set()
     if s in G and t in G:
         paths = list(nx.node_disjoint_paths(G, s, t))
         [ndp.add(tuple(path)) for path in paths]
+    else:
+        print('source and/or target not in graph G!')
 
     return ndp
 
 
 def find_maximum_flow(G, s, t):
-    '''Requires edge attribute 'capacity'
-    '''
-    max_flow_path = nx.maximum_flow(G, s, t)
-    max_flow = nx.maximum_flow_value(G, s, t)
-    return max_flow_path, max_flow
+    '''Finds maximum flow between a source and target node in graph G.
+    Requires edge attribute 'capacity'. Any edge without 'capacity' attribute
+    will be given infinite capacity and find_maximum_flow will not work as
+    intended.
+    '''    
+    if G.is_multigraph() and G.is_directed():
+        warning_message = ("Warning: Maximum flow does not support " +
+        "MultiDiGraphs, the graph form that Trailmap uses. Graph will be " +
+        "converted to DiGraph, which can lose information if you have " +
+        "multiple edges running between two nodes. \nChecking if graph G " +
+        "has an identical DiGraph representation...\n")
+        print(warning_message)
+        H = nx.DiGraph(G)
+        
+        if set(H.edges()) == set(G.edges()):
+            proceed_message = ("G does not appear to have multiple edges " +
+            "between any pair of nodes. No information should be lost in " +
+            "the switch to DiGraph. Proceeding with flow calculation.\n")
+            print(proceed_message)
+        else:
+            proceed_message = ("G appears to have multiple edges between at " +
+            "least one pair of nodes. Information WILL be lost in the " +
+            "switch to DiGraph. Proceeding with caution, consider the " +
+            "results at your own risk\n")
+            print(proceed_message)
+        
+    elif G.is_directed():
+        H = G
+    else:
+        print("Provided graph is not a MultiDiGraph and other errors may \
+            occur. Abort.\n")
+        return None, None, H
+
+    max_flow_path = nx.maximum_flow(H, s, t)
+    max_flow = nx.maximum_flow_value(H, s, t)
+    return max_flow_path, max_flow, H
 
 
 def find_simple_cycles(G):
     '''finds cycles in a graph and returns them in a list of lists
     '''
-    sc = set()
-    sc.update(tuple(cycle) for cycle in nx.simple_cycles(G))      
-
+    sc = list(nx.simple_cycles(G))
     return sc
+
+
+def check_if_sublist(path, set_of_steps):
+    '''Checks to see if a pathway contains each element in steps (list)
+    in order. Returns True/False and the position where the cycle should be
+    inserted. If False, returns -1
+    '''
+    pos = -1
+    sub_list = False
+
+    for i in range(len(path) - len(set_of_steps)+1):
+        if path[i] == set_of_steps[0]:
+            n = 1
+            while (n < len(set_of_steps) and path[i+n] == set_of_steps[n]):
+                n+=1
+            if n == len(set_of_steps):
+                sub_list = True
+                pos = i + len(set_of_steps)
+                break
+
+    return sub_list, pos
 
 
 def splice_cycles_into_pathways(pathways, sc):
     pathways_with_cycles = set()
+    pathways = list(pathways) # turn into list, which supports indexing
     # look at all pathways and simple cycles
     for path, loop in [(x,y) for x in pathways for y in sc]:
         # check if an individual path contains an individual known loop
@@ -72,28 +127,6 @@ def splice_cycles_into_pathways(pathways, sc):
             pathways_with_cycles.update(p)
 
     return pathways_with_cycles
-
-
-def check_if_sublist(path, steps):
-    '''Checks to see if a pathway contains each element in steps (list)
-    in order. Returns True/False and the position where the cycle should be
-    inserted. If False, returns -1
-    '''
-    pos = -1
-    sub_list = False
-
-    for i in range(len(path) - len(steps)+1):
-        if path[i] == steps[0]:
-            n = 1
-            while (n < len(steps) and path[i+n] == steps[n]):
-                n+=1
-            
-            if n == len(steps):
-                sub_list = True
-                pos = i + len(steps)
-                break
-
-    return sub_list, pos
 
 
 def find_paths_with_source(pathways, source):
@@ -166,3 +199,10 @@ def get_longest_path(pathways):
         longest_length = 0
 
     return longest_length, longest
+
+
+def get_number_of_pathways(pathways):
+    '''returns integer number of pathways'''
+    num_paths = len(pathways)
+
+    return num_paths

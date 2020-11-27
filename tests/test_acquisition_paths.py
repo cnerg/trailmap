@@ -40,7 +40,7 @@ def test_find_simple_paths_str_sources():
     edges = [("A","B"), ("B","C")]
     G.add_edges_from(edges)
     sources = "A"
-    sinks = ["B"]
+    sinks = ["C"]
     exp_paths = {("A", "B", "C")}
 
     obs_pathways = ap.find_simple_paths(G, sources, sinks)

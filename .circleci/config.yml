@@ -3,6 +3,9 @@ jobs:
   test_py3:
     docker:
       - image: cyclus/cycamore:latest
+        auth:
+          username: $DOCKERHUB_USER
+          password: $DOCKERHUB_PASS
     steps:
       - checkout
       - run: pip install -U pytest networkx matplotlib scipy coverage
@@ -15,4 +18,5 @@ jobs:
 workflows:
   testing:
     jobs:
-      - test_py3
+      - test_py3:
+          context: dockerhub

@@ -1,5 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def print_graph_parameters(G, pathways): # pragma: no cover
@@ -7,7 +8,7 @@ def print_graph_parameters(G, pathways): # pragma: no cover
     '''
     print('\nGRAPH PARAMETERS')
 
-    num_paths = get_number_of_pathways(pathways)
+    num_paths = len(pathways)
     print("A total of " + str(num_paths) + " pathways were generated")
 
     (shortest_length, shortest) = get_shortest_path(pathways)
@@ -83,7 +84,7 @@ def find_maximum_flow(G, s, t):
     return max_flow_path, max_flow, H
 
 
-def find_simple_cycles(G):
+def find_simple_cycles(G): # pragma: no cover
     '''finds cycles in a graph and returns them in a list of lists
     '''
     sc = list(nx.simple_cycles(G))
@@ -92,8 +93,8 @@ def find_simple_cycles(G):
 
 def check_if_sublist(path, set_of_steps):
     '''Checks to see if a pathway contains each element in steps (list)
-    in order. Returns True/False and the position where the cycle should be
-    inserted. If False, returns -1
+    in order. Returns True/False and the position where the steps begin. If
+    False, returns -1
     '''
     pos = -1
     sub_list = False
@@ -111,20 +112,24 @@ def check_if_sublist(path, set_of_steps):
     return sub_list, pos
 
 
-def splice_cycles_into_pathways(pathways, sc):
+def get_pathways_with_cycles(pathways, sc):
     pathways_with_cycles = set()
     pathways = list(pathways) # turn into list, which supports indexing
     # look at all pathways and simple cycles
     for path, loop in [(x,y) for x in pathways for y in sc]:
-        # check if an individual path contains an individual known loop
-        (sub_list, pos) = check_if_sublist(path, loop)
-        if sub_list:
-            # make path into list, which is mutable
-            p = list(path)
-            #a dd a single loop
-            p[pos:pos] = loop
-            # note pathway to new list of pathways containing cycles
-            pathways_with_cycles.update(p)
+        rolled_loops = []
+        #step backwards from end of path to find if/where loop goes
+        for node in path[-1:0:-1]:
+            if node in loop:
+                rolled_loops.append(tuple(np.roll(loop, -loop.index(node))))
+                break
+        
+        # record all the pathways that have cycles, insert single loop
+        if rolled_loops:
+            path=list(path)
+            for rl in rolled_loops:
+                path.insert(path.index(rl[0]), rl)
+            pathways_with_cycles.add(tuple(path))
 
     return pathways_with_cycles
 
@@ -199,10 +204,3 @@ def get_longest_path(pathways):
         longest_length = 0
 
     return longest_length, longest
-
-
-def get_number_of_pathways(pathways):
-    '''returns integer number of pathways'''
-    num_paths = len(pathways)
-
-    return num_paths

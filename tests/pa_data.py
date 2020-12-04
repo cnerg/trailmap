@@ -37,6 +37,6 @@ testdata = [
      [("Source", "FacilityA"), ("FacilityA", "FacilityB"), 
       ("FacilityB", "FacilityC"), ("FacilityB", "Sink"), 
       ("FacilityC", "FacilityA")],
-     {("Source", "FacilityA", "FaciityB", "Sink")},
+     {("Source", "FacilityA", "FacilityB", "Sink")},
      [["FacilityB", "FacilityC", "FacilityA",]])
 ]

@@ -58,29 +58,6 @@ def test_maximum_flow_multipaths():
     assert obs == exp
 
 
-@pytest.mark.parametrize("name, short, long, semiconnect, hierarchy, edges, \
-                         paths, sc", testdata)
-def test_find_simple_cycles(name, short, long, semiconnect, hierarchy,
-                            edges, paths, sc, capsys):
-    G = nx.MultiDiGraph()
-    G.add_edges_from(edges)
-
-    obs_sc = pa.find_simple_cycles(G)
-    print(obs_sc)
-    assert obs_sc == sc
-
-
-@pytest.mark.parametrize("name, short, long, semiconnect, hierarchy, edges, \
-                         paths, sc", testdata)
-def test_find_simple_cycles_format(name, short, long, semiconnect, hierarchy,
-                                   edges, paths, sc, capsys):
-    G = nx.MultiDiGraph()
-    G.add_edges_from(edges)
-
-    sc = pa.find_simple_cycles(G)
-    assert type(sc) == list
-
-
 def test_check_if_sublist_yes():
     path = ('Source', 'FacilityA', 'FacilityB', 'Sink')
     steps = ('FacilityA', 'FacilityB')
@@ -136,9 +113,3 @@ def test_find_paths_with_sink(data):
 
     obs_subset = pa.find_paths_with_sink(pathways, sink)
     assert obs_subset == exp_subset
-
-
-def test_get_number_of_pathways_format():
-    paths = {('A', 'B'), ('B', 'C')}
-    num_paths = pa.get_number_of_pathways(paths)
-    assert type(num_paths) == int

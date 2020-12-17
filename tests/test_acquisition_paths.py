@@ -35,6 +35,58 @@ def test_find_simple_paths(name, edges, fd_in, fd_out, exp_paths):
     assert exp_paths == obs_pathways
 
 
+def test_find_simple_paths_str_sources():
+    G = nx.MultiDiGraph()
+    edges = [("A","B"), ("B","C")]
+    G.add_edges_from(edges)
+    sources = "A"
+    sinks = ["C"]
+    exp_paths = {("A", "B", "C")}
+
+    obs_pathways = ap.find_simple_paths(G, sources, sinks)
+
+    assert exp_paths == obs_pathways
+
+
+def test_find_simple_paths_str_sinks():
+    G = nx.MultiDiGraph()
+    edges = [("Source","A"), ("A","B"), ("B","C"), ("B","Sink"), ("C","A")]
+    G.add_edges_from(edges)
+    sources = ["Source"]
+    sinks = "Sink"
+    exp_paths = {("Source","A","B","Sink")}
+
+    obs_pathways = ap.find_simple_paths(G, sources, sinks)
+
+    assert exp_paths == obs_pathways
+
+
+def test_find_simple_paths_int_sources():
+    G = nx.MultiDiGraph()
+    edges = [(0,1), (1,2), (2,3), (2,4), (3,1)]
+    G.add_edges_from(edges)
+    sources = 0
+    sinks = [4]
+
+    exp_paths = {(0, 1, 2, 4)}
+    obs_pathways = ap.find_simple_paths(G, sources, sinks)
+
+    assert exp_paths == obs_pathways
+
+
+def test_find_simple_paths_int_sinks():
+    G = nx.MultiDiGraph()
+    edges = [(0,1), (1,2), (2,3), (2,4), (3,1)]
+    G.add_edges_from(edges)
+    sources = [0]
+    sinks = 4
+
+    exp_paths = {(0, 1, 2, 4)}
+    obs_pathways = ap.find_simple_paths(G, sources, sinks)
+
+    assert exp_paths == obs_pathways
+
+
 @pytest.mark.parametrize("name, edges, fd_in, fd_out, exp_paths", testdata)
 def test_apa(name, edges, fd_in, fd_out, exp_paths):
     (G, obs_paths) = ap.conduct_apa(fd_in, fd_out)

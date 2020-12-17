@@ -30,6 +30,12 @@ def build_graph(facility_dict_in, facility_dict_out):
 def find_simple_paths(G, sources, sinks):
     ''' finds all simple paths between a given list of sources and targets
     '''
+    # turn sources/sinks into list if a single string/int was submitted
+    if type(sources) == int or type(sources) == str:
+        sources = [sources]
+    if type(sinks) == int or type(sinks) == str:
+        sinks = [sinks]
+
     pathways = set()
     for source, sink in [(x, y) for x in sources for y in sinks]:
         pathways.update({tuple(path) for path in nx.all_simple_paths(

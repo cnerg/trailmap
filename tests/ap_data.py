@@ -16,14 +16,14 @@ testdata = [
      {("Source", "Sink"), ("Source", "Sink")}
      ),
     ("multisourcesink",
-     [("SourceA", "Facility"), ("SourceB", "Facility"), ("Facility", "SinkA"),
-      ("Facility", "SinkB")],
-     {"SourceA": [], "SourceB": [], "Facility": ["commodityA", "commodityB"],
-      "SinkA": ["changedcommodity"], "SinkB": ["changedcommodity"]},
-     {"SourceA": ["commodityA"], "SourceB": ["commodityB"],
-      "Facility": ["changedcommodity"], "SinkA": [], "SinkB": []},
-     {("SourceA", "Facility", "SinkA"), ("SourceA", "Facility", "SinkB"),
-      ("SourceB", "Facility", "SinkA"), ("SourceB", "Facility", "SinkB")}
+     [("Source", "Facility"), ("Source1", "Facility"), ("Facility", "Sink"),
+      ("Facility", "Sink1")],
+     {"Source": [], "Source1": [], "Facility": ["commodityA", "commodityB"],
+      "Sink": ["changedcommodity"], "Sink1": ["changedcommodity"]},
+     {"Source": ["commodityA"], "Source1": ["commodityB"],
+      "Facility": ["changedcommodity"], "Sink": [], "Sink1": []},
+     {("Source", "Facility", "Sink"), ("Source", "Facility", "Sink1"),
+      ("Source1", "Facility", "Sink"), ("Source1", "Facility", "Sink1")}
      ),
     ("bypass",
      [("Source", "Facility"), ("Source", "Sink"), ("Facility", "Sink")],
@@ -33,12 +33,12 @@ testdata = [
      {("Source", "Sink"), ("Source", "Facility", "Sink")}
      ),
     ("independent",
-     [("SourceA", "SinkA"), ("SourceB", "SinkB")],
-     {"SourceA": [], "SourceB": [], "SinkA": ["commodityA"],
-      "SinkB": ["commodityB"]},
-     {"SourceA": ["commodityA"], "SourceB": ["commodityB"], "SinkA": [],
-      "SinkB": []},
-     {("SourceA", "SinkA"), ("SourceB", "SinkB")}
+     [("Source", "Sink"), ("Source1", "Sink1")],
+     {"Source": [], "Source1": [], "Sink": ["commodityA"],
+      "Sink1": ["commodityB"]},
+     {"Source": ["commodityA"], "Source1": ["commodityB"], "Sink": [],
+      "Sink1": []},
+     {("Source", "Sink"), ("Source1", "Sink1")}
      ),
     ("cycle",
      [("Source", "Facility"), ("Facility", "Recycle"), ("Recycle", "Facility"),

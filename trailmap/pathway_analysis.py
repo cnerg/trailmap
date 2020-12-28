@@ -141,25 +141,48 @@ def check_if_sublist(path, set_of_steps):
     return sub_list, pos
 
 
+def roll_cycle(path, cycle):
+    '''Checks if a cycle can be entered from a node in a simple path. If so,
+    finds the last overlapping node and rolls the cycle so it begins with that
+    node. Returns an empty tuple if the cycle does not overlap with the path.
+    '''
+    rolled = ()
+    # find the shared node that appears last in the path
+    for node in path[-1:0:-1]:
+        if node in cycle:
+            rolled = tuple(np.roll(cycle, -cycle.index(node)),)
+            break
+
+    return rolled
+
+
+def insert_cycles(path, rolled_cycles):
+    '''Inserts already-rolled cycles as a tuple into a path
+    '''
+    path=list(path)
+    for rc in rolled_cycles:
+        path.insert(path.index(rc[0]), rc)
+    path_with_cycles = tuple(path)
+    return path_with_cycles
+
+
 def get_pathways_with_cycles(pathways, sc):
+    '''For the given list of pathways and simple cycles, returns a set of
+    pathways that could contain 1 or more cycles
+    '''
     pathways_with_cycles = set()
     pathways = list(pathways) # turn into list, which supports indexing
     # look at all pathways and simple cycles
     for path in pathways:
-        rolled_loops = []
-        for loop in sc:
-            #step backwards from end of path to find if/where loop goes
-            for node in path[-1:0:-1]:
-                if node in loop:
-                    rolled_loops.append(tuple(np.roll(loop, -loop.index(node))))
-                    break
+        rolled_cycles = set()
+        for cycle in sc:
+            rolled_cycle = roll_cycle(path, cycle)
+            if rolled_cycle:
+                rolled_cycles.add(rolled_cycle)
         
-        # record all the pathways that have cycles, insert single loop
-        if rolled_loops:
-            path=list(path)
-            for rl in rolled_loops:
-                path.insert(path.index(rl[0]), rl)
-            pathways_with_cycles.add(tuple(path))
+        # record all the pathways that have cycles, insert single cycle
+        if rolled_cycles:
+            pathways_with_cycles.add(insert_cycles(path, rolled_cycles))
 
     return pathways_with_cycles
 
@@ -189,6 +212,14 @@ def find_paths_with_sink(pathways, sink):
 def find_paths_containing_all(pathways, facilities):
     '''returns a subset of pathways that contain all facilities in input list
     '''
+    # convert to list if user passed a string or int
+    if type(facilities) == int or type(facilities) == str:
+        facilities = [facilities]
+    
+    # if user passed an empty list, return no pathways
+    if not facilities:
+        return set()
+
     p = set()
     for path in pathways:
         if set(facilities).issubset(path):
@@ -201,9 +232,19 @@ def find_paths_containing_one_of(pathways, facilities):
     '''returns a subset of pathways that contain one or more facilities in
     input list
     '''
+    # convert to list if user passed a string or int
+    if type(facilities) == int or type(facilities) == str:
+        facilities = [facilities]
+    
+    # if user passed an empty list, return no pathways
+    if not facilities:
+        return set()
+
     p = set()
     for path in pathways:
-        p.add([path for facility in facilities if facility in path])
+        contains = [path for facility in facilities if facility in path]
+        if contains:
+            p.add(contains[0])
 
     return p
 
@@ -214,7 +255,7 @@ def get_shortest_path(pathways):
     '''
     if len(pathways) is not 0:
         shortest_length = min([len(path) for path in pathways])
-        shortest = [path for path in pathways if len(path) == shortest_length]
+        shortest = set([path for path in pathways if len(path) == shortest_length])
     else:
         shortest = "No pathways found"
         shortest_length = 0
@@ -228,7 +269,7 @@ def get_longest_path(pathways):
     '''
     if len(pathways) is not 0:
         longest_length = max([len(path) for path in pathways])
-        longest = [path for path in pathways if len(path) == longest_length]
+        longest = set([path for path in pathways if len(path) == longest_length])
     else:
         longest = "No pathways found"
         longest_length = 0

@@ -4,6 +4,7 @@ import trailmap.pathway_analysis as pa
 import networkx as nx
 import pytest
 from tests.pa_data import testdata
+import collections
 # name, short, long, semiconnect, hierarchy, edges, paths, sc
 
 
@@ -178,11 +179,137 @@ def data():
     return testdata
 
 
+def test_roll_cycle():
+    path = (0, 1, 3, 4, 7, 8)
+    cycle = [3, 4, 7]
+    
+    exp = (7, 3, 4)
+    obs = pa.roll_cycle(path, cycle)
+    assert obs == exp
+
+
+def test_roll_cycle_correct_order():
+    path = (0, 1, 3, 4, 7, 8)
+    cycle = [7, 3, 4]
+    
+    exp = (7, 3, 4)
+    obs = pa.roll_cycle(path, cycle)
+    assert obs == exp
+
+
+def test_roll_cycle_not_present():
+    path = (0, 1, 3, 4, 7, 8)
+    cycle = [5, 6]
+    
+    exp = ()
+    obs = pa.roll_cycle(path, cycle)
+    assert obs == exp
+
+
+def test_insert_cycle_single():
+    path = (0, 1, 3, 4, 7, 8)
+    rolled_cycles = {(7, 3, 4)}
+    
+    exp = (0, 1, 3, 4, (7, 3, 4), 7, 8)
+    obs = pa.insert_cycles(path, rolled_cycles)
+    assert obs == exp
+
+
+def test_insert_cycle_loop():
+    path = (0, 1, 3, 4, 7, 8)
+    rolled_cycles = {(7,)}
+    
+    exp = (0, 1, 3, 4, (7,), 7, 8)
+    obs = pa.insert_cycles(path, rolled_cycles)
+    assert obs == exp
+
+
+def test_insert_cycle_multiple():
+    path = (0, 2, 6, 7, 8)
+    rolled_cycles = ((6, 5), (7, 3, 4))
+
+    exp = (0, 2, (6, 5), 6, (7, 3, 4), 7, 8)
+    obs = pa.insert_cycles(path, rolled_cycles)
+    assert obs == exp
+
+
+def test_insert_cycle_multiple_same_index():
+    path = ('Source' , 'A', 'B', 'C', 'Sink')
+    rolled_cycles = (('C', 'D', 'B'), ('C', 'D', 'E', 'A', 'B'))
+    
+    exp = ('Source' , 'A', 'B', ('C', 'D', 'B'), ('C', 'D', 'E', 'A', 'B'),
+           'C', 'Sink')
+    obs = pa.insert_cycles(path, rolled_cycles)
+    assert obs == exp
+
+
+def test_insert_cycle_multiple_same_index_with_loop():
+    path = (0, 2, 6, 7, 8)
+    rolled_cycles = {(7,), (7, 3, 4)}
+
+    exp = (0, 2, 6, (7,), (7, 3, 4), 7, 8)
+    obs = pa.insert_cycles(path, rolled_cycles)
+    assert obs == exp
+
+
+def test_get_pathways_with_cycles():
+    pathways = {(0, 1, 3, 4, 7, 8)}
+    sc = [[2, 1]]
+
+    exp = {(0, (1, 2), 1, 3, 4, 7, 8)}
+    obs = pa.get_pathways_with_cycles(pathways, sc)
+
+    assert obs == exp
+
+
+def test_get_pathways_with_cycles_multiple():
+    pathways = {(0, 1, 3, 4, 7, 8), (0, 2, 3, 4, 7, 8), (0, 2, 6, 7, 8)}
+    sc = [[5, 6], [3, 4, 7]]
+
+    exp = {(0, 1, 3, 4, (7, 3, 4), 7, 8),
+           (0, 2, 3, 4, (7, 3, 4), 7, 8),
+           (0, 2, (6, 5), 6, (7, 3, 4), 7, 8)}
+
+    obs = pa.get_pathways_with_cycles(pathways, sc)
+    #assert all(x in obs for x in exp)
+    assert obs == exp
+
+
+def test_get_pathways_with_cycles_loop():
+    pathways = {(0, 1, 3, 4, 7, 8), (0, 2, 3, 4, 7, 8), (0, 2, 6, 7, 8)}
+    sc = [[7], [3, 4, 7]]
+
+    exp = {(0, 1, 3, 4, (7, 3, 4), (7,), 7, 8),
+           (0, 2, 3, 4, (7, 3, 4), (7,), 7, 8),
+           (0, 2, 6, (7, 3, 4), (7,), 7, 8)}
+
+    obs = pa.get_pathways_with_cycles(pathways, sc)
+    assert obs == exp
+
+
 def test_find_paths_with_source(data):
     exp_subset = {("SourceA", "Facility", "SinkA"),
                   ("SourceA", "Facility", "SinkB")}
-    pathways = testdata[2][6]
+    pathways = testdata[2][4]
     source = "SourceA"
+
+    obs_subset = pa.find_paths_with_source(pathways, source)
+    assert obs_subset == exp_subset
+
+
+def test_find_paths_with_source_none(data):
+    exp_subset = set()
+    pathways = testdata[2][4]
+    source = "SourceC"
+
+    obs_subset = pa.find_paths_with_source(pathways, source)
+    assert obs_subset == exp_subset
+
+
+def test_find_paths_with_source_not_source(data):
+    exp_subset = set()
+    pathways = testdata[2][4]
+    source = "Facility"
 
     obs_subset = pa.find_paths_with_source(pathways, source)
     assert obs_subset == exp_subset
@@ -191,8 +318,146 @@ def test_find_paths_with_source(data):
 def test_find_paths_with_sink(data):
     exp_subset = {("SourceA", "Facility", "SinkB"),
                   ("SourceB", "Facility", "SinkB")}
-    pathways = testdata[2][6]
+    pathways = testdata[2][4]
     sink = "SinkB"
 
     obs_subset = pa.find_paths_with_sink(pathways, sink)
     assert obs_subset == exp_subset
+
+
+def test_find_paths_with_sink_none(data):
+    exp_subset = set()
+    pathways = testdata[2][4]
+    sink = "SinkC"
+
+    obs_subset = pa.find_paths_with_sink(pathways, sink)
+    assert obs_subset == exp_subset
+
+
+def test_find_paths_with_sink_not_sink(data):
+    exp_subset = set()
+    pathways = testdata[2][4]
+    sink = "SourceA"
+
+    obs_subset = pa.find_paths_with_sink(pathways, sink)
+    assert obs_subset == exp_subset
+
+
+def test_find_paths_containing_all_single(data):
+    exp_subset = {("SourceB", "Facility", "SinkA"),
+                  ("SourceB", "Facility", "SinkB")}
+    pathways = testdata[2][4]
+    contain = "SourceB"
+
+    obs_subset = pa.find_paths_containing_all(pathways, contain)
+    assert obs_subset == exp_subset
+
+
+def test_find_paths_containing_all(data):
+    exp_subset = {("SourceB", "Facility", "SinkB")}
+    pathways = testdata[2][4]
+    contain = ["SourceB", "SinkB"]
+
+    obs_subset = pa.find_paths_containing_all(pathways, contain)
+    assert obs_subset == exp_subset
+
+
+def test_find_paths_containing_all_none(data):
+    exp_subset = set()
+    pathways = testdata[2][4]
+    contain = ["SourceB", "SourceA"]
+
+    obs_subset = pa.find_paths_containing_all(pathways, contain)
+    assert obs_subset == exp_subset
+
+
+def test_find_paths_containing_all_empty(data):
+    exp_subset = set()
+    pathways = testdata[2][4]
+    contain = []
+
+    obs_subset = pa.find_paths_containing_all(pathways, contain)
+    assert obs_subset == exp_subset
+
+
+def test_find_paths_containing_one_of_single(data):
+    exp_subset = {("SourceA", "Facility", "SinkA"),
+                  ("SourceA", "Facility", "SinkB")}
+    pathways = testdata[2][4]
+    contain = "SourceA"
+
+    obs_subset = pa.find_paths_containing_one_of(pathways, contain)
+    assert obs_subset == exp_subset
+
+
+def test_find_paths_containing_one_of(data):
+    exp_subset = {("SourceA", "Facility", "SinkA"),
+                  ("SourceA", "Facility", "SinkB"),
+                  ("SourceB", "Facility", "SinkA")}
+    pathways = testdata[2][4]
+    contain = ["SourceA", "SinkA"]
+
+    obs_subset = pa.find_paths_containing_one_of(pathways, contain)
+    assert obs_subset == exp_subset
+
+
+def test_find_paths_containing_one_of_none(data):
+    exp_subset = set()
+    pathways = testdata[2][4]
+    contain = ["SourceC"]
+
+    obs_subset = pa.find_paths_containing_one_of(pathways, contain)
+    assert obs_subset == exp_subset
+
+
+def test_find_paths_containing_one_of_empty(data):
+    exp_subset = set()
+    pathways = testdata[2][4]
+    contain = []
+
+    obs_subset = pa.find_paths_containing_all(pathways, contain)
+    assert obs_subset == exp_subset
+
+
+@pytest.mark.parametrize("name, short, long, edges, paths, sc", testdata)
+def test_get_shortest_path_length(name, short, long, edges, paths, sc):
+    (obs_length, obs) = pa.get_shortest_path(paths)
+
+    assert obs_length == short
+
+
+def test_get_shortest_path_length_none():
+    pathways = {}
+    exp_length = 0
+    (obs_length, obs) = pa.get_shortest_path(pathways)
+
+    assert obs_length == exp_length
+
+
+@pytest.mark.parametrize("name, short, long, edges, paths, sc", testdata)
+def test_get_shortest_paths(name, short, long, edges, paths, sc):
+    exp = {path for path in paths if len(path) == short}
+    (obs_length, obs) = pa.get_shortest_path(paths)
+    assert obs == exp
+
+
+@pytest.mark.parametrize("name, short, long, edges, paths, sc", testdata)
+def test_get_longest_paths(name, short, long, edges, paths, sc):
+    (obs_length, obs) = pa.get_longest_path(paths)
+
+    assert obs_length == long
+
+
+def test_get_longest_path_length_none():
+    pathways = {}
+    exp_length = 0
+    (obs_length, obs) = pa.get_longest_path(pathways)
+
+    assert obs_length == exp_length
+
+
+@pytest.mark.parametrize("name, short, long, edges, paths, sc", testdata)
+def test_get_longest_paths(name, short, long, edges, paths, sc):
+    exp = {path for path in paths if len(path) == long}
+    (obs_length, obs) = pa.get_longest_path(paths)
+    assert obs == exp

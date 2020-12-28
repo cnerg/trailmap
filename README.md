@@ -21,6 +21,16 @@ Follow installation instructions from [Cyclus](https://github.com/cyclus/cyclus)
 
 run `pip install --user networkx`
 
+Other Python packages which you may or may not already have installed:
+
+* numpy
+* matplotlib
+* more_itertools
+
+To install or confirm install of these additional packages, run
+
+`pip install --user numpy matplotlib more_itertools`
+
 ### Recommended Packages
 
 In addition to Cyclus, it is strongly recommended that the user install [Cycamore](https://github.com/cyclus/cycamore)

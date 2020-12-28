@@ -1,6 +1,8 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
+from more_itertools import pairwise
+from collections import Counter
 
 
 def print_graph_parameters(G, pathways): # pragma: no cover
@@ -33,7 +35,7 @@ def print_graph_parameters(G, pathways): # pragma: no cover
 
 def find_node_disjoint_paths(G, s, t):
     '''Returns a set of paths that share a source and target node, but have
-    exactly 0 shared edges
+    exactly 0 shared edges.
     '''
     ndp = set()
     if s in G and t in G:
@@ -45,47 +47,74 @@ def find_node_disjoint_paths(G, s, t):
     return ndp
 
 
+def has_multiedges(G):
+    '''Determines if graph G contains multiple edges between any pair of
+    nodes. Returns 0 if False, 1 if True, and -1 if the provided graph is not
+    a NetworkX Multigraph.
+    '''
+    if G.is_multigraph():
+        H = nx.DiGraph(G)
+        if sorted(H.edges()) == sorted(G.edges()):
+            multiedges = 0
+        else:
+            multiedges = 1
+    else:
+        multiedges = -1
+
+    return multiedges
+
+
 def find_maximum_flow(G, s, t):
     '''Finds maximum flow between a source and target node in graph G.
     Requires edge attribute 'capacity'. Any edge without 'capacity' attribute
     will be given infinite capacity and find_maximum_flow will not work as
     intended.
     '''    
-    if G.is_multigraph() and G.is_directed():
-        warning_message = ("Warning: Maximum flow does not support " +
+
+    warning_message = ("Warning: Maximum flow does not support " +
         "MultiDiGraphs, the graph form that Trailmap uses. Graph will be " +
         "converted to DiGraph, which can lose information if you have " +
         "multiple edges running between two nodes. \nChecking if graph G " +
         "has an identical DiGraph representation...\n")
-        print(warning_message)
-        H = nx.DiGraph(G)
-        
-        if set(H.edges()) == set(G.edges()):
-            proceed_message = ("G does not appear to have multiple edges " +
-            "between any pair of nodes. No information should be lost in " +
-            "the switch to DiGraph. Proceeding with flow calculation.\n")
-            print(proceed_message)
+
+    if G.is_directed():
+        multiedges = has_multiedges(G)
+        if multiedges == True:
+            print(warning_message)
+            print("G appears to have multiple edges between at least one " +
+            "pair of nodes. Information WILL be lost in the switch to " +
+            "DiGraph. Proceeding with caution, consider the results at " +
+            "your own risk\n")
+            H = nx.DiGraph(G)
+        elif multiedges == False:
+            print(warning_message)
+            print("G does not appear to have multiple edges between any " +
+            "pair of nodes. No information should be lost in the switch to " +
+            "DiGraph. Proceeding with flow calculation.\n")
+            H = nx.DiGraph(G)
         else:
-            proceed_message = ("G appears to have multiple edges between at " +
-            "least one pair of nodes. Information WILL be lost in the " +
-            "switch to DiGraph. Proceeding with caution, consider the " +
-            "results at your own risk\n")
-            print(proceed_message)
-        
-    elif G.is_directed():
-        H = G
+            H=G
     else:
-        print("Provided graph is not a MultiDiGraph and other errors may \
-            occur. Abort.\n")
-        return None, None, H
+        print("Provided graph is not a MultiDiGraph or DiGraph and other \
+        errors may occur. Abort.\n")
+        return None, None, G
 
     max_flow_path = nx.maximum_flow(H, s, t)
     max_flow = nx.maximum_flow_value(H, s, t)
     return max_flow_path, max_flow, H
 
 
+def find_pathway_flow(G, pathway):
+    '''returns the maximum permissible flow for a given pathway. Any edge
+    without 'capacity' attribute will be given infinite capacity and
+    find_pathway_flow will not work as intended.
+    '''
+
+    return
+
+
 def find_simple_cycles(G): # pragma: no cover
-    '''finds cycles in a graph and returns them in a list of lists
+    '''finds cycles in a graph and returns them in a list of lists.
     '''
     sc = list(nx.simple_cycles(G))
     return sc
@@ -94,7 +123,7 @@ def find_simple_cycles(G): # pragma: no cover
 def check_if_sublist(path, set_of_steps):
     '''Checks to see if a pathway contains each element in steps (list)
     in order. Returns True/False and the position where the steps begin. If
-    False, returns -1
+    False, returns position -1.
     '''
     pos = -1
     sub_list = False
@@ -116,13 +145,14 @@ def get_pathways_with_cycles(pathways, sc):
     pathways_with_cycles = set()
     pathways = list(pathways) # turn into list, which supports indexing
     # look at all pathways and simple cycles
-    for path, loop in [(x,y) for x in pathways for y in sc]:
+    for path in pathways:
         rolled_loops = []
-        #step backwards from end of path to find if/where loop goes
-        for node in path[-1:0:-1]:
-            if node in loop:
-                rolled_loops.append(tuple(np.roll(loop, -loop.index(node))))
-                break
+        for loop in sc:
+            #step backwards from end of path to find if/where loop goes
+            for node in path[-1:0:-1]:
+                if node in loop:
+                    rolled_loops.append(tuple(np.roll(loop, -loop.index(node))))
+                    break
         
         # record all the pathways that have cycles, insert single loop
         if rolled_loops:

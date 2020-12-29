@@ -44,7 +44,7 @@ def find_simple_paths(G, sources, sinks):
     return pathways
 
 
-def print_acquisition_paths(pathways):
+def print_acquisition_paths(pathways): # pragma: no cover
     print("\nSimple paths")
     pprint(pathways)
 

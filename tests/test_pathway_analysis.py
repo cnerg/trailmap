@@ -454,7 +454,7 @@ def test_find_paths_containing_all_empty(data):
     assert obs_subset == exp_subset
 
 
-def test_find_paths_containing_one_of_single(data):
+def test_find_paths_containing_one_of_single_str(data):
     exp_subset = {("SourceA", "Facility", "SinkA"),
                   ("SourceA", "Facility", "SinkB")}
     pathways = testdata[2][4]
@@ -463,6 +463,15 @@ def test_find_paths_containing_one_of_single(data):
     obs_subset = pa.find_paths_containing_one_of(pathways, contain)
     assert obs_subset == exp_subset
 
+
+def test_find_paths_containing_one_of_single_int(data):
+    exp_subset = {(0,1,5,6,4)}
+    pathways = {(0,1,2,3,4), (0,2,3,4),(0,1,5,6,4), (0,1,7,4)}
+    contain = 5
+
+    obs_subset = pa.find_paths_containing_one_of(pathways, contain)
+    assert obs_subset == exp_subset
+    
 
 def test_find_paths_containing_one_of(data):
     exp_subset = {("SourceA", "Facility", "SinkA"),

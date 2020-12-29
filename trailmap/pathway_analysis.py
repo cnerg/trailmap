@@ -111,6 +111,7 @@ def find_pathway_flow(G, pathway):
     '''
     multiedges = has_multiedges(G)
     if multiedges != True:
+        # graph either has no multiedges, or is not in MultiDiGraph format
         H = nx.DiGraph(G)
         edges = set(pairwise(pathway))
         #H.remove_nodes_from([n for n in G if n not in pathway])
@@ -120,7 +121,7 @@ def find_pathway_flow(G, pathway):
         sinks = get_sinks(H_sg)
 
         # check for capacity in edges (if no capacity, NetworkX will raise an
-        # exception) and if every edge has infinite flow (return inf)
+        # exception) and if every edge has infinite flow, return inf
         infinite_flow = True
         for edge in edges:
             if 'capacity' not in H_sg.get_edge_data(*edge):
@@ -135,7 +136,8 @@ def find_pathway_flow(G, pathway):
             return path_flow
 
     else:
-        print("has multiple edges")
+        print("Provided pathway has multiple edges. Flow calculation across \
+               multi-edged pathways is currently unsupported. Returning None")
         return None
 
 
@@ -255,7 +257,7 @@ def find_paths_containing_all(pathways, facilities):
 
 
 def find_paths_containing_one_of(pathways, facilities):
-    '''returns a subset of pathways that contain one or more facilities in
+    '''Returns a subset of pathways that contain one or more facilities in
     input list
     '''
     # convert to list if user passed a string or int
@@ -276,7 +278,7 @@ def find_paths_containing_one_of(pathways, facilities):
 
 
 def get_shortest_path(pathways):
-    '''finds the pathway with the shortest number of steps from source to
+    '''Finds the pathway with the shortest number of steps from source to
     target. Returns a tuple with path and length.
     '''
     if len(pathways) is not 0:
@@ -290,7 +292,7 @@ def get_shortest_path(pathways):
 
 
 def get_longest_path(pathways):
-    '''finds the pathway with the longest number of steps from source to
+    '''Finds the pathway with the longest number of steps from source to
     target. Returns a tuple with path and length.
     '''
     if len(pathways) is not 0:
@@ -304,10 +306,14 @@ def get_longest_path(pathways):
 
 
 def get_sources(G):
+    '''Returns nodes that have no incoming edges.
+    '''
     sources = list(node for node, in_deg in G.in_degree() if in_deg == 0)
     return sources
 
 
 def get_sinks(G):
+    '''Returns nodes that have no outgoing edges.
+    '''
     sinks = list(node for node, out_deg in G.out_degree() if out_deg == 0)
     return sinks

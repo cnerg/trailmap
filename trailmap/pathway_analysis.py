@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from more_itertools import pairwise
 from collections import Counter
+import math
 
 
 def print_graph_parameters(G, pathways): # pragma: no cover
@@ -106,11 +107,36 @@ def find_maximum_flow(G, s, t):
 
 def find_pathway_flow(G, pathway):
     '''returns the maximum permissible flow for a given pathway. Any edge
-    without 'capacity' attribute will be given infinite capacity and
-    find_pathway_flow will not work as intended.
+    without 'capacity' attribute will be given infinite capacity.
     '''
+    multiedges = has_multiedges(G)
+    if multiedges != True:
+        H = nx.DiGraph(G)
+        edges = set(pairwise(pathway))
+        #H.remove_nodes_from([n for n in G if n not in pathway])
+        H_sg = H.edge_subgraph(edges).copy()
 
-    return
+        sources = get_sources(H_sg)
+        sinks = get_sinks(H_sg)
+
+        # check for capacity in edges (if no capacity, NetworkX will raise an
+        # exception) and if every edge has infinite flow (return inf)
+        infinite_flow = True
+        for edge in edges:
+            if 'capacity' not in H_sg.get_edge_data(*edge):
+                return math.inf
+            if math.isinf(H_sg.get_edge_data(*edge)['capacity']) is False:
+                infinite_flow = False
+            
+        if infinite_flow is True:
+            return math.inf
+        else:
+            path_flow = nx.maximum_flow_value(H_sg, sources[0], sinks[0])
+            return path_flow
+
+    else:
+        print("has multiple edges")
+        return None
 
 
 def find_simple_cycles(G): # pragma: no cover
@@ -275,3 +301,13 @@ def get_longest_path(pathways):
         longest_length = 0
 
     return longest_length, longest
+
+
+def get_sources(G):
+    sources = list(node for node, in_deg in G.in_degree() if in_deg == 0)
+    return sources
+
+
+def get_sinks(G):
+    sinks = list(node for node, out_deg in G.out_degree() if out_deg == 0)
+    return sinks

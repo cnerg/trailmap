@@ -5,6 +5,7 @@ import networkx as nx
 import pytest
 from tests.pa_data import testdata
 import collections
+from math import inf
 # name, short, long, semiconnect, hierarchy, edges, paths, sc
 
 
@@ -138,6 +139,79 @@ def test_maximum_flow_not_directed_or_multi():
     G.add_edge('b', 'c', capacity = 5)
 
     (obs_path, obs, H) = pa.find_maximum_flow(G, 'a', 'c')
+
+    assert obs == exp
+
+
+def test_find_pathway_flow():
+    G = nx.DiGraph()
+    edges = [(0, 1, {'capacity': 3}),
+           (1, 2, {'capacity': 5}),
+           (2, 3, {'capacity': 3}),
+           (3, 4, {'capacity': 4}),
+           (0, 5, {'capacity': 2}),
+           (5, 6, {'capacity': 3}),
+           (6, 3, {'capacity': 2}),
+           (3, 7, {'capacity': 1}),
+           (7, 4, {'capacity': 2})]
+    G.add_edges_from(edges)
+    path = (0, 5, 6, 3, 7)
+
+    exp = 1
+    obs = pa.find_pathway_flow(G, path)
+
+    assert obs == exp
+
+def test_find_pathway_flow_no_capacity():
+    G = nx.MultiDiGraph()
+    edges = [(0,1), (1,2), (2,3)]
+    G.add_edges_from(edges)
+    path = (0,1,2,3)
+
+    exp = inf
+
+    obs = pa.find_pathway_flow(G, path)
+
+    assert obs == exp
+
+
+def test_find_pathway_flow_single_infinite():
+    G = nx.DiGraph()
+    edges = [(0, 1, {'capacity': 3}),
+             (1, 2, {'capacity': inf}),
+             (2, 3, {'capacity': 3})]
+    G.add_edges_from(edges)
+    path = (0,1,2,3)
+    obs = pa.find_pathway_flow(G, path)
+
+    exp = 3
+
+    assert obs == exp
+
+
+def test_find_pathway_flow_all_infinite():
+    G = nx.DiGraph()
+    edges = [(0, 1, {'capacity': inf}),
+             (1, 2, {'capacity': inf}),
+             (2, 3, {'capacity': inf})]
+    G.add_edges_from(edges)
+    path = (0,1,2,3)
+    obs = pa.find_pathway_flow(G, path)
+
+    exp = inf
+
+    assert obs == exp
+
+
+def test_find_pathway_flow_multiedges():
+    G = nx.MultiDiGraph()
+    edges = [(0,1),(1,2), (1,2), (2,3)]
+    G.add_edges_from(edges)
+    pathway = (0,1,2,3)
+
+    exp = None
+
+    obs = pa.find_pathway_flow(G, pathway)
 
     assert obs == exp
 
@@ -415,7 +489,7 @@ def test_find_paths_containing_one_of_empty(data):
     pathways = testdata[2][4]
     contain = []
 
-    obs_subset = pa.find_paths_containing_all(pathways, contain)
+    obs_subset = pa.find_paths_containing_one_of(pathways, contain)
     assert obs_subset == exp_subset
 
 

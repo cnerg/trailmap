@@ -2,7 +2,11 @@
 
 ### Project Status
 
-[![Coverage Status](https://coveralls.io/repos/github/CNERG/trailmap/badge.svg?branch=main)](https://coveralls.io/github/CNERG/trailmap?branch=main) [![CircleCI](https://circleci.com/gh/CNERG/trailmap.svg?style=shield)](https://circleci.com/gh/CNERG/trailmap)
+[![Coverage Status](https://coveralls.io/repos/github/CNERG/trailmap/badge.svg?branch=main)](https://coveralls.io/github/CNERG/trailmap?branch=main) 
+[![CircleCI](https://circleci.com/gh/CNERG/trailmap.svg?style=shield)](https://circleci.com/gh/CNERG/trailmap) 
+![GitHub issues](https://img.shields.io/github/issues/cnerg/trailmap)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/cnerg/trailmap)
+[![Cyclus Users Group](https://img.shields.io/badge/Cyclus%20Users%20Group-Join-orange)](https://groups.google.com/g/cyclus-users)
 
 This tool takes a Cyclus input file and conducts acquisition pathway analysis on the facilities specified.
 

@@ -3,6 +3,7 @@ import networkx as nx
 import trailmap.parse_input as pi
 import trailmap.commodity_dictionary as cd
 import trailmap.acquisition_paths as ap
+import trailmap.pathway_analysis as pa
 
 
 def make_parser():
@@ -32,10 +33,13 @@ def main(args=None):
     (G, pathways) = ap.conduct_apa(facility_dict_in, facility_dict_out)
 
     if ns.supress_print is False:
+        pa.print_graph_parameters(G, pathways)
         ap.print_acquisition_paths(pathways)
 
     if ns.pickle:
         nx.write_gpickle(G, ns.picklefile)
+
+    return G, pathways
 
 
 if __name__ == '__main__':

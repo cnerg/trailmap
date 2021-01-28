@@ -285,7 +285,7 @@ def get_shortest_path(pathways):
         shortest_length = min([len(path) for path in pathways])
         shortest = set([path for path in pathways if len(path) == shortest_length])
     else:
-        shortest = "No pathways found"
+        shortest = set()
         shortest_length = 0
 
     return shortest_length, shortest

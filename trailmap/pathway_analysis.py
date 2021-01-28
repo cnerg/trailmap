@@ -278,7 +278,7 @@ def find_paths_containing_one_of(pathways, facilities):
 
 
 def get_shortest_path(pathways):
-    '''Finds the pathway with the shortest number of steps from source to
+    '''Finds the set of pathways with the shortest number of steps from source to
     target. Returns a tuple with path and length.
     '''
     if len(pathways) is not 0:

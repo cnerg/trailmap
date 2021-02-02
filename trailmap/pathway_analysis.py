@@ -56,11 +56,11 @@ def has_multiedges(G):
     if G.is_multigraph():
         H = nx.DiGraph(G)
         if sorted(H.edges()) == sorted(G.edges()):
-            multiedges = 0
+            multiedges = False
         else:
-            multiedges = 1
+            multiedges = True
     else:
-        multiedges = -1
+        multiedges = None
 
     return multiedges
 
@@ -114,26 +114,15 @@ def find_pathway_flow(G, pathway):
         # graph either has no multiedges, or is not in MultiDiGraph format
         H = nx.DiGraph(G)
         edges = set(pairwise(pathway))
-        #H.remove_nodes_from([n for n in G if n not in pathway])
         H_sg = H.edge_subgraph(edges).copy()
 
         sources = get_sources(H_sg)
         sinks = get_sinks(H_sg)
 
-        # check for capacity in edges (if no capacity, NetworkX will raise an
-        # exception) and if every edge has infinite flow, return inf
-        infinite_flow = True
-        for edge in edges:
-            if 'capacity' not in H_sg.get_edge_data(*edge):
-                return math.inf
-            if math.isinf(H_sg.get_edge_data(*edge)['capacity']) is False:
-                infinite_flow = False
+
+        path_flow = nx.maximum_flow_value(H_sg, sources[0], sinks[0])
             
-        if infinite_flow is True:
-            return math.inf
-        else:
-            path_flow = nx.maximum_flow_value(H_sg, sources[0], sinks[0])
-            return path_flow
+        return path_flow
 
     else:
         print("Provided pathway has multiple edges. Flow calculation across \
@@ -148,7 +137,7 @@ def find_simple_cycles(G): # pragma: no cover
     return sc
 
 
-def check_if_sublist(path, set_of_steps):
+def check_if_sublist(path, list_of_steps):
     '''Checks to see if a pathway contains each element in steps (list)
     in order. Returns True/False and the position where the steps begin. If
     False, returns position -1.
@@ -156,14 +145,14 @@ def check_if_sublist(path, set_of_steps):
     pos = -1
     sub_list = False
 
-    for i in range(len(path) - len(set_of_steps)+1):
-        if path[i] == set_of_steps[0]:
+    for i in range(len(path) - len(list_of_steps)+1):
+        if path[i] == list_of_steps[0]:
             n = 1
-            while (n < len(set_of_steps) and path[i+n] == set_of_steps[n]):
+            while (n < len(list_of_steps) and path[i+n] == list_of_steps[n]):
                 n+=1
-            if n == len(set_of_steps):
+            if n == len(list_of_steps):
                 sub_list = True
-                pos = i + len(set_of_steps)
+                pos = i
                 break
 
     return sub_list, pos
@@ -174,7 +163,7 @@ def roll_cycle(path, cycle):
     finds the last overlapping node and rolls the cycle so it begins with that
     node. Returns an empty tuple if the cycle does not overlap with the path.
     '''
-    rolled = ()
+    rolled = None
     # find the shared node that appears last in the path
     for node in path[-1:0:-1]:
         if node in cycle:
@@ -184,14 +173,14 @@ def roll_cycle(path, cycle):
     return rolled
 
 
-def insert_cycles(path, rolled_cycles):
+def insert_cycles(pathway, rolled_cycles):
     '''Inserts already-rolled cycles as a tuple into a path
     '''
-    path=list(path)
+    path=list(pathway)
     for rc in rolled_cycles:
         path.insert(path.index(rc[0]), rc)
     path_with_cycles = tuple(path)
-    return path_with_cycles
+    return tuple(path)
 
 
 def get_pathways_with_cycles(pathways, sc):
@@ -199,8 +188,6 @@ def get_pathways_with_cycles(pathways, sc):
     pathways that could contain 1 or more cycles
     '''
     pathways_with_cycles = set()
-    pathways = list(pathways) # turn into list, which supports indexing
-    # look at all pathways and simple cycles
     for path in pathways:
         rolled_cycles = set()
         for cycle in sc:

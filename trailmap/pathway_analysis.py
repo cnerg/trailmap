@@ -218,22 +218,14 @@ def get_pathways_with_cycles(pathways, sc):
 def find_paths_with_source(pathways, source):
     '''returns a subset of pathways that contain a given facility as the source
     '''
-    subset_pathways = set()
-    for path in pathways:
-        if path[0] == source:
-            subset_pathways.add(path)
-
+    subset_pathways = set([ path for path in pathways if path[0] == source])
     return subset_pathways
 
 
 def find_paths_with_sink(pathways, sink):
     '''returns a subset of pathways that contain a given facility as the sink
     '''
-    subset_pathways = set()
-    for path in pathways:
-        if path[-1] == sink:
-            subset_pathways.add(path)
-
+    subset_pathways = set([ path for path in pathways if path[-1] == sink])
     return subset_pathways
 
 
@@ -299,7 +291,7 @@ def get_longest_path(pathways):
         longest_length = max([len(path) for path in pathways])
         longest = set([path for path in pathways if len(path) == longest_length])
     else:
-        longest = "No pathways found"
+        longest = set()
         longest_length = 0
 
     return longest_length, longest

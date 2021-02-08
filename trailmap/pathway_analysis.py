@@ -26,6 +26,8 @@ def print_graph_parameters(G, pathways): # pragma: no cover
     semiconnected = nx.is_semiconnected(G)
     print('\nIs the graph semiconnected? ' + str(semiconnected))
     if semiconnected is False:
+        if len(list(n for n, in_deg in G.in_degree() if in_deg == 0)) > 1:
+            print("You have multiple source facilities")
         print("-->This is likely because you have multiple source facilities")
 
     hierarchy = nx.flow_hierarchy(G)
@@ -50,8 +52,8 @@ def find_node_disjoint_paths(G, s, t):
 
 def has_multiedges(G):
     '''Determines if graph G contains multiple edges between any pair of
-    nodes. Returns 0 if False, 1 if True, and -1 if the provided graph is not
-    a NetworkX Multigraph.
+    nodes. Returns True, False, or None if the provided graph is not a
+    NetworkX Multigraph.
     '''
     if G.is_multigraph():
         H = nx.DiGraph(G)
@@ -145,6 +147,9 @@ def check_if_sublist(path, list_of_steps):
     pos = -1
     sub_list = False
 
+    if len(path) is 0 or len(list_of_steps) is 0:
+        return sub_list, pos
+
     for i in range(len(path) - len(list_of_steps)+1):
         if path[i] == list_of_steps[0]:
             n = 1
@@ -187,6 +192,9 @@ def get_pathways_with_cycles(pathways, sc):
     '''For the given list of pathways and simple cycles, returns a set of
     pathways that could contain 1 or more cycles
     '''
+    if len(pathways) is 0:
+        return set()
+
     pathways_with_cycles = set()
     for path in pathways:
         rolled_cycles = set()
@@ -205,6 +213,9 @@ def get_pathways_with_cycles(pathways, sc):
 def find_paths_with_source(pathways, source):
     '''returns a subset of pathways that contain a given facility as the source
     '''
+    if len(pathways) is 0:
+        return set()
+
     subset_pathways = set([ path for path in pathways if path[0] == source])
     return subset_pathways
 
@@ -212,6 +223,9 @@ def find_paths_with_source(pathways, source):
 def find_paths_with_sink(pathways, sink):
     '''returns a subset of pathways that contain a given facility as the sink
     '''
+    if len(pathways) is 0:
+        return set()
+    
     subset_pathways = set([ path for path in pathways if path[-1] == sink])
     return subset_pathways
 
@@ -219,6 +233,9 @@ def find_paths_with_sink(pathways, sink):
 def find_paths_containing_all(pathways, facilities):
     '''returns a subset of pathways that contain all facilities in input list
     '''
+    if len(pathways) is 0:
+        return set()
+
     # convert to list if user passed a string or int
     if type(facilities) == int or type(facilities) == str:
         facilities = [facilities]
@@ -242,16 +259,24 @@ def find_paths_containing_one_of(pathways, facilities):
     # convert to list if user passed a string or int
     if type(facilities) == int or type(facilities) == str:
         facilities = [facilities]
-    
+
     # if user passed an empty list, return no pathways
-    if not facilities:
+    if len(pathways) is 0 or len(facilities) is 0:
         return set()
 
-    p = set()
-    for path in pathways:
-        contains = [path for facility in facilities if facility in path]
-        if contains:
-            p.add(contains[0])
+    facilities = set(facilities)
+    p = set([path for path in pathways if set(path).intersection(facilities)])
+
+    return p
+
+
+def containing_one_of(pathways, facilities):
+    # if user passed an empty list, return no pathways
+    if len(pathways) is 0 or len(facilities) is 0:
+        return set()
+    
+    facilities = set(facilities)
+    p = set([path for path in pathways if set(path).intersection(facilities)])
 
     return p
 

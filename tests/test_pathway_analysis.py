@@ -56,7 +56,7 @@ def test_has_multiedges_false():
 
 
 def test_has_multiedges_not_multigraph():
-    exp = -1
+    exp = None
     G = nx.DiGraph()
     G.add_edge('a', 'b')
     
@@ -168,11 +168,9 @@ def test_find_pathway_flow_no_capacity():
     G.add_edges_from(edges)
     path = (0,1,2,3)
 
-    exp = inf
-
-    obs = pa.find_pathway_flow(G, path)
-
-    assert obs == exp
+    with pytest.raises(nx.exception.NetworkXUnbounded) as excinfo:   
+        obj = pa.find_pathway_flow(G, path) 
+        assert 'Infinite capacity path, flow unbounded above.' in str(excinfo.value)
 
 
 def test_find_pathway_flow_single_infinite():
@@ -196,11 +194,10 @@ def test_find_pathway_flow_all_infinite():
              (2, 3, {'capacity': inf})]
     G.add_edges_from(edges)
     path = (0,1,2,3)
-    obs = pa.find_pathway_flow(G, path)
 
-    exp = inf
-
-    assert obs == exp
+    with pytest.raises(nx.exception.NetworkXUnbounded) as excinfo:   
+        obj = pa.find_pathway_flow(G, path) 
+        assert 'Infinite capacity path, flow unbounded above.' in str(excinfo.value)
 
 
 def test_find_pathway_flow_multiedges():
@@ -229,7 +226,7 @@ def test_check_if_sublist_yes_position():
     steps = ('FacilityA', 'FacilityB')
 
     sub_list, pos = pa.check_if_sublist(path, steps)
-    assert pos == 3
+    assert pos == 1
 
 
 def test_check_if_sublist_no():
@@ -275,7 +272,7 @@ def test_roll_cycle_not_present():
     path = (0, 1, 3, 4, 7, 8)
     cycle = [5, 6]
     
-    exp = ()
+    exp = None
     obs = pa.roll_cycle(path, cycle)
     assert obs == exp
 

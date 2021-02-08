@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from more_itertools import pairwise
 from collections import Counter
-import math
 
 
 def print_graph_parameters(G, pathways): # pragma: no cover
@@ -28,7 +27,6 @@ def print_graph_parameters(G, pathways): # pragma: no cover
     if semiconnected is False:
         if len(list(n for n, in_deg in G.in_degree() if in_deg == 0)) > 1:
             print("You have multiple source facilities")
-        print("-->This is likely because you have multiple source facilities")
 
     hierarchy = nx.flow_hierarchy(G)
     print("\nGraph hierarchy is " + "{:.3f}".format(hierarchy))
@@ -50,12 +48,19 @@ def find_node_disjoint_paths(G, s, t):
     return ndp
 
 
+def is_multidigraph(G):
+    if G.is_directed() and G.is_multigraph():
+        return True
+    else:
+        return False
+
+
 def has_multiedges(G):
     '''Determines if graph G contains multiple edges between any pair of
     nodes. Returns True, False, or None if the provided graph is not a
     NetworkX Multigraph.
     '''
-    if G.is_multigraph():
+    if is_multidigraph(G):
         H = nx.DiGraph(G)
         if sorted(H.edges()) == sorted(G.edges()):
             multiedges = False
@@ -67,69 +72,55 @@ def has_multiedges(G):
     return multiedges
 
 
-def find_maximum_flow(G, s, t):
-    '''Finds maximum flow between a source and target node in graph G.
-    Requires edge attribute 'capacity'. Any edge without 'capacity' attribute
-    will be given infinite capacity and find_maximum_flow will not work as
-    intended.
-    '''    
-
-    warning_message = ("Warning: Maximum flow does not support " +
-        "MultiDiGraphs, the graph form that Trailmap uses. Graph will be " +
-        "converted to DiGraph, which can lose information if you have " +
-        "multiple edges running between two nodes. \nChecking if graph G " +
-        "has an identical DiGraph representation...\n")
-
-    if G.is_directed():
-        multiedges = has_multiedges(G)
-        if multiedges == True:
-            print(warning_message)
-            print("G appears to have multiple edges between at least one " +
-            "pair of nodes. Information WILL be lost in the switch to " +
-            "DiGraph. Proceeding with caution, consider the results at " +
-            "your own risk\n")
-            H = nx.DiGraph(G)
-        elif multiedges == False:
-            print(warning_message)
-            print("G does not appear to have multiple edges between any " +
-            "pair of nodes. No information should be lost in the switch to " +
-            "DiGraph. Proceeding with flow calculation.\n")
-            H = nx.DiGraph(G)
-        else:
-            H=G
-    else:
-        print("Provided graph is not a MultiDiGraph or DiGraph and other \
-        errors may occur. Abort.\n")
-        return None, None, G
-
-    max_flow_path = nx.maximum_flow(H, s, t)
-    max_flow = nx.maximum_flow_value(H, s, t)
-    return max_flow_path, max_flow, H
-
-
-def find_pathway_flow(G, pathway):
-    '''returns the maximum permissible flow for a given pathway. Any edge
-    without 'capacity' attribute will be given infinite capacity.
+def transform_to_digraph(G):
+    '''Reduces multigraph to digraph and returns whether the transform is
+    safe/does not lose edges (True), or if the the transform is unsafe
+    and information is lost (False)
     '''
-    multiedges = has_multiedges(G)
-    if multiedges != True:
-        # graph either has no multiedges, or is not in MultiDiGraph format
+    if is_multidigraph(G):
+        safe = has_multiedges(G)
         H = nx.DiGraph(G)
+        return H, safe
+    else:
+        return None, None
+
+
+def find_maximum_flow(H, s, t):
+    '''Finds maximum flow between a source and target node in DiGraph G.
+    Requires edge attribute 'capacity'. MultiDiGraphs not supported.
+    '''    
+    if type(H) == nx.classes.digraph.DiGraph:
+        max_flow_path = nx.maximum_flow(H, s, t)
+        max_flow = nx.maximum_flow_value(H, s, t)
+        return max_flow_path, max_flow
+    else:
+        raise TypeError('Graph must be DiGraph type. Use \
+            convert_to_digraph to help convert a MultiDiGraph to a DiGraph, \
+            which may result in loss of information')
+
+
+def find_pathway_flow(H, pathway):
+    '''returns the maximum permissible flow for a given pathway in DiGraph G. 
+    Any edge without 'capacity' attribute will be given infinite capacity.
+    MultiDiGraphs not supported.
+    '''
+    if type(H) == nx.classes.digraph.DiGraph:
         edges = set(pairwise(pathway))
         H_sg = H.edge_subgraph(edges).copy()
 
         sources = get_sources(H_sg)
         sinks = get_sinks(H_sg)
 
-
         path_flow = nx.maximum_flow_value(H_sg, sources[0], sinks[0])
             
         return path_flow
 
+    elif type(H) == nx.classes.multidigraph.MultiDiGraph:
+        raise TypeError('Graph must be DiGraph type. Use \
+            convert_to_digraph to help convert a MultiDiGraph to a DiGraph, \
+            which may result in loss of information')
     else:
-        print("Provided pathway has multiple edges. Flow calculation across \
-               multi-edged pathways is currently unsupported. Returning None")
-        return None
+        raise TypeError('Graph must be DiGraph type.')
 
 
 def find_simple_cycles(G): # pragma: no cover
@@ -244,10 +235,7 @@ def find_paths_containing_all(pathways, facilities):
     if not facilities:
         return set()
 
-    p = set()
-    for path in pathways:
-        if set(facilities).issubset(path):
-            p.add(path)
+    p = set([path for path in pathways if set(facilities).issubset(path)])
 
     return p
 
@@ -264,17 +252,6 @@ def find_paths_containing_one_of(pathways, facilities):
     if len(pathways) is 0 or len(facilities) is 0:
         return set()
 
-    facilities = set(facilities)
-    p = set([path for path in pathways if set(path).intersection(facilities)])
-
-    return p
-
-
-def containing_one_of(pathways, facilities):
-    # if user passed an empty list, return no pathways
-    if len(pathways) is 0 or len(facilities) is 0:
-        return set()
-    
     facilities = set(facilities)
     p = set([path for path in pathways if set(path).intersection(facilities)])
 

@@ -66,25 +66,25 @@ def test_has_multiedges_not_multigraph():
 
 def test_maximum_flow_simple():
     exp = 3
-    G = nx.MultiDiGraph()
+    G = nx.DiGraph()
     G.add_edge('a', 'b', capacity=3)
     G.add_edge('b', 'c', capacity=4)
     G.add_edge('c', 'd', capacity=3)
     G.add_edge('b', 'd', capacity=10)
-    (obs_path, obs, H) = pa.find_maximum_flow(G, 'a', 'd')
+    (obs_path, obs) = pa.find_maximum_flow(G, 'a', 'd')
 
     assert obs == exp
 
 
 def test_maximum_flow_several_paths():
     exp = 3
-    G = nx.MultiDiGraph()
+    G = nx.DiGraph()
     G.add_edge('a', 'd', capacity=1)
     G.add_edge('a', 'b', capacity=1)
     G.add_edge('a', 'c', capacity=1)
     G.add_edge('b', 'd', capacity=2)
     G.add_edge('c', 'd', capacity=5)
-    (obs_path, obs, H) = pa.find_maximum_flow(G, 'a', 'd')
+    (obs_path, obs) = pa.find_maximum_flow(G, 'a', 'd')
 
     assert obs == exp
 
@@ -93,12 +93,12 @@ def test_maximum_flow_multigraph():
     '''NetworkX retains only the most recently added edge if multiple edges 
     exit and a MultiGraph is converted into a DiGraph'''
     exp = 1
-    G = nx.MultiDiGraph()
+    G = nx.DiGraph()
     G.add_edge('a', 'b', capacity=2)
     G.add_edge('a', 'b', capacity=1)
     G.add_edge('b', 'c', capacity=5)
 
-    (obs_path, obs, H) = pa.find_maximum_flow(G, 'a', 'c')
+    (obs_path, obs) = pa.find_maximum_flow(G, 'a', 'c')
 
     assert obs == exp
 
@@ -107,12 +107,12 @@ def test_maximum_flow_multigraph_order_flipped():
     '''NetworkX retains only the most recently added edge if multiple edges 
     exit and a MultiGraph is converted into a DiGraph'''
     exp = 2
-    G = nx.MultiDiGraph()
+    G = nx.DiGraph()
     G.add_edge('a', 'b', capacity=1)
     G.add_edge('a', 'b', capacity=2)
     G.add_edge('b', 'c', capacity=5)
 
-    (obs_path, obs, H) = pa.find_maximum_flow(G, 'a', 'c')
+    (obs_path, obs) = pa.find_maximum_flow(G, 'a', 'c')
 
     assert obs == exp
 
@@ -127,7 +127,7 @@ def test_maximum_flow_directed_only():
     G.add_edge('c', 'd', capacity=3)
     G.add_edge('d', 'e', capacity=4)
 
-    (obs_path, obs, H) = pa.find_maximum_flow(G, 'a', 'e')
+    (obs_path, obs) = pa.find_maximum_flow(G, 'a', 'e')
 
     assert obs == exp
 
@@ -138,9 +138,9 @@ def test_maximum_flow_not_directed_or_multi():
     G.add_edge('a', 'b', capacity = 2)
     G.add_edge('b', 'c', capacity = 5)
 
-    (obs_path, obs, H) = pa.find_maximum_flow(G, 'a', 'c')
-
-    assert obs == exp
+    with pytest.raises(TypeError) as excinfo:
+        (obs_path, obs) = pa.find_maximum_flow(G, 'a', 'c')
+        assert 'Graph must be DiGraph type' in str(excinfo)
 
 
 def test_find_pathway_flow():
@@ -163,7 +163,7 @@ def test_find_pathway_flow():
     assert obs == exp
 
 def test_find_pathway_flow_no_capacity():
-    G = nx.MultiDiGraph()
+    G = nx.DiGraph()
     edges = [(0,1), (1,2), (2,3)]
     G.add_edges_from(edges)
     path = (0,1,2,3)
@@ -206,11 +206,13 @@ def test_find_pathway_flow_multiedges():
     G.add_edges_from(edges)
     pathway = (0,1,2,3)
 
-    exp = None
+    #exp = None
 
-    obs = pa.find_pathway_flow(G, pathway)
+    with pytest.raises(TypeError) as excinfo:
+        obs = pa.find_pathway_flow(G, pathway)
+        assert 'Graph must be DiGraph type' in str(excinfo)
 
-    assert obs == exp
+    #assert obs == exp
 
 
 def test_check_if_sublist_yes():

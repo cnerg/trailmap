@@ -78,7 +78,10 @@ def transform_to_digraph(G):
     and information is lost (False)
     '''
     if is_multidigraph(G):
-        safe = has_multiedges(G)
+        if has_multiedges(G) is False:
+            safe = True
+        else:
+            safe = False
         H = nx.DiGraph(G)
         return H, safe
     else:

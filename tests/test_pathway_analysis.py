@@ -35,6 +35,42 @@ def test_ndp_format():
     assert obs == exp
 
 
+def test_is_multidigraph_true():
+    exp = True
+    G = nx.MultiDiGraph()
+    G.add_edge('a', 'b')
+    obs = pa.is_multidigraph(G)
+
+    assert obs == exp
+
+
+def test_is_multidigraph_graph():
+    exp = False
+    G = nx.Graph()
+    G.add_edge('a', 'b')
+    obs = pa.is_multidigraph(G)
+
+    assert obs == exp
+
+
+def test_is_multidigraph_digraph():
+    exp = False
+    G = nx.DiGraph()
+    G.add_edge('a', 'b')
+    obs = pa.is_multidigraph(G)
+
+    assert obs == exp
+
+
+def test_is_multidigraph_multigraph():
+    exp = False
+    G = nx.MultiGraph()
+    G.add_edge('a', 'b')
+    obs = pa.is_multidigraph(G)
+
+    assert obs == exp
+
+
 def test_has_multiedges_true():
     exp = 1
     G = nx.MultiDiGraph()
@@ -62,6 +98,50 @@ def test_has_multiedges_not_multigraph():
     
     obs = pa.has_multiedges(G)
     assert obs == exp
+
+
+def test_transform_to_digraph():
+    G = nx.MultiDiGraph()
+    G.add_edge('a', 'b')
+    exp_H = nx.DiGraph()
+    exp_H.add_edge('a', 'b')
+    exp = list(exp_H.edges())
+
+    (obs_H, obs_safe) = pa.transform_to_digraph(G)
+    obs = list(obs_H.edges())
+
+    assert obs == exp
+
+
+def test_transform_to_digraph_unsafe():
+    exp = False
+    G = nx.MultiDiGraph()
+    G.add_edge('a', 'b')
+    G.add_edge('a', 'b')
+
+    (obs_H, obs_safe) = pa.transform_to_digraph(G)
+
+    assert obs_safe == exp
+
+@pytest.mark.parametrize("G,exp", [(nx.Graph(), None), 
+                                   (nx.DiGraph(), None),
+                                   (nx.MultiGraph(), None)])
+def test_transform_to_digraph_formats(G, exp):
+    G.add_edge('a', 'b')
+    (obs_H, obs_safe) = pa.transform_to_digraph(G)
+
+    assert obs_H == exp
+
+
+@pytest.mark.parametrize("G,exp", [(nx.Graph(), None), 
+                                   (nx.DiGraph(), None),
+                                   (nx.MultiGraph(), None),
+                                   (nx.MultiDiGraph(), True)])
+def test_transform_to_digraph_formats_is_safe(G, exp):
+    G.add_edge('a', 'b')
+    (obs_H, obs_safe) = pa.transform_to_digraph(G)
+
+    assert obs_safe == exp
 
 
 def test_maximum_flow_simple():
@@ -214,67 +294,29 @@ def test_find_pathway_flow_multiedges():
 
     #assert obs == exp
 
-
-def test_check_if_sublist_yes():
+@pytest.mark.parametrize("steps,exp", [(('FacilityA', 'FacilityB'), True),
+                                       (('FacilityA', 'Sink'), False)])
+def test_check_if_sublist(steps,exp):
     path = ('Source', 'FacilityA', 'FacilityB', 'Sink')
-    steps = ('FacilityA', 'FacilityB')
-
     sub_list, pos = pa.check_if_sublist(path, steps)
-    assert sub_list == True
+    assert sub_list == exp
 
-
-def test_check_if_sublist_yes_position():
+@pytest.mark.parametrize("steps,exp", [(('FacilityA', 'FacilityB'), 1),
+                                       (('FacilityA', 'Sink'), -1)])
+def test_check_if_sublist_pos(steps,exp):
     path = ('Source', 'FacilityA', 'FacilityB', 'Sink')
-    steps = ('FacilityA', 'FacilityB')
-
     sub_list, pos = pa.check_if_sublist(path, steps)
-    assert pos == 1
+    assert pos == exp
 
 
-def test_check_if_sublist_no():
-    path = ('Source', 'FacilityA', 'FacilityB', 'Sink')
-    steps = ('FacilityA', 'Sink')
-
-    sub_list, pos = pa.check_if_sublist(path, steps)
-    assert sub_list == False
-
-
-def test_check_if_sublist_no_position():
-    path = ('Source', 'FacilityA', 'FacilityB', 'Sink')
-    steps = ('FacilityA', 'Sink')
-
-    sub_list, pos = pa.check_if_sublist(path, steps)
-    assert pos == -1
-
-
-@pytest.fixture
-def data():
-    return testdata
-
-
-def test_roll_cycle():
+@pytest.mark.parametrize("cycle,exp", [([3, 4, 7], (7, 3, 4)),
+                                       ([7, 3, 4], (7, 3, 4)),
+                                       ([5, 6], None),
+                                       ([6], None),
+                                       ([], None)])
+def test_roll_cycle(cycle, exp):
     path = (0, 1, 3, 4, 7, 8)
-    cycle = [3, 4, 7]
-    
-    exp = (7, 3, 4)
-    obs = pa.roll_cycle(path, cycle)
-    assert obs == exp
 
-
-def test_roll_cycle_correct_order():
-    path = (0, 1, 3, 4, 7, 8)
-    cycle = [7, 3, 4]
-    
-    exp = (7, 3, 4)
-    obs = pa.roll_cycle(path, cycle)
-    assert obs == exp
-
-
-def test_roll_cycle_not_present():
-    path = (0, 1, 3, 4, 7, 8)
-    cycle = [5, 6]
-    
-    exp = None
     obs = pa.roll_cycle(path, cycle)
     assert obs == exp
 
@@ -360,146 +402,94 @@ def test_get_pathways_with_cycles_loop():
     assert obs == exp
 
 
-def test_find_paths_with_source(data):
-    exp_subset = {("SourceA", "Facility", "SinkA"),
-                  ("SourceA", "Facility", "SinkB")}
+@pytest.fixture
+def data():
+    return testdata
+
+
+@pytest.mark.parametrize("source,exp", [("SourceA",
+                                        {("SourceA", "Facility", "SinkA"),
+                                        ("SourceA", "Facility", "SinkB")}),
+                                        ("SourceC", set()),
+                                        ("Facility", set())])
+def test_find_paths_with_source(source,exp):
     pathways = testdata[2][4]
-    source = "SourceA"
 
     obs_subset = pa.find_paths_with_source(pathways, source)
-    assert obs_subset == exp_subset
+    assert obs_subset == exp
 
 
-def test_find_paths_with_source_none(data):
-    exp_subset = set()
+@pytest.mark.parametrize("sink,exp", [("SinkB",
+                                      {("SourceA", "Facility", "SinkB"),
+                                      ("SourceB", "Facility", "SinkB")}),
+                                      ("SinkC", set()),
+                                      ("SourceA", set())])
+def test_find_paths_with_sink(sink,exp):
     pathways = testdata[2][4]
-    source = "SourceC"
-
-    obs_subset = pa.find_paths_with_source(pathways, source)
-    assert obs_subset == exp_subset
-
-
-def test_find_paths_with_source_not_source(data):
-    exp_subset = set()
-    pathways = testdata[2][4]
-    source = "Facility"
-
-    obs_subset = pa.find_paths_with_source(pathways, source)
-    assert obs_subset == exp_subset
-
-
-def test_find_paths_with_sink(data):
-    exp_subset = {("SourceA", "Facility", "SinkB"),
-                  ("SourceB", "Facility", "SinkB")}
-    pathways = testdata[2][4]
-    sink = "SinkB"
 
     obs_subset = pa.find_paths_with_sink(pathways, sink)
-    assert obs_subset == exp_subset
+    assert obs_subset == exp
 
 
-def test_find_paths_with_sink_none(data):
-    exp_subset = set()
+@pytest.mark.parametrize("contain,exp", [("SourceB", 
+                                         {("SourceB", "Facility", "SinkA"),
+                                         ("SourceB", "Facility", "SinkB")}),
+                                         (["SourceB", "SinkB"],
+                                         {("SourceB", "Facility", "SinkB")}),
+                                         (["SourceB", "SourceA"], set()),
+                                         ([], set())])
+def test_find_paths_containing_all(contain, exp):
     pathways = testdata[2][4]
-    sink = "SinkC"
 
-    obs_subset = pa.find_paths_with_sink(pathways, sink)
-    assert obs_subset == exp_subset
-
-
-def test_find_paths_with_sink_not_sink(data):
-    exp_subset = set()
-    pathways = testdata[2][4]
-    sink = "SourceA"
-
-    obs_subset = pa.find_paths_with_sink(pathways, sink)
-    assert obs_subset == exp_subset
+    obs = pa.find_paths_containing_all(pathways, contain)
+    assert obs == exp
 
 
-def test_find_paths_containing_all_single(data):
-    exp_subset = {("SourceB", "Facility", "SinkA"),
-                  ("SourceB", "Facility", "SinkB")}
-    pathways = testdata[2][4]
-    contain = "SourceB"
-
-    obs_subset = pa.find_paths_containing_all(pathways, contain)
-    assert obs_subset == exp_subset
-
-
-def test_find_paths_containing_all(data):
-    exp_subset = {("SourceB", "Facility", "SinkB")}
-    pathways = testdata[2][4]
-    contain = ["SourceB", "SinkB"]
-
-    obs_subset = pa.find_paths_containing_all(pathways, contain)
-    assert obs_subset == exp_subset
-
-
-def test_find_paths_containing_all_none(data):
-    exp_subset = set()
-    pathways = testdata[2][4]
-    contain = ["SourceB", "SourceA"]
-
-    obs_subset = pa.find_paths_containing_all(pathways, contain)
-    assert obs_subset == exp_subset
-
-
-def test_find_paths_containing_all_empty(data):
-    exp_subset = set()
-    pathways = testdata[2][4]
-    contain = []
-
-    obs_subset = pa.find_paths_containing_all(pathways, contain)
-    assert obs_subset == exp_subset
-
-
-def test_find_paths_containing_one_of_single_str(data):
-    exp_subset = {("SourceA", "Facility", "SinkA"),
-                  ("SourceA", "Facility", "SinkB")}
-    pathways = testdata[2][4]
-    contain = "SourceA"
-
-    obs_subset = pa.find_paths_containing_one_of(pathways, contain)
-    assert obs_subset == exp_subset
-
-
-def test_find_paths_containing_one_of_single_int(data):
-    exp_subset = {(0,1,5,6,4)}
-    pathways = {(0,1,2,3,4), (0,2,3,4),(0,1,5,6,4), (0,1,7,4)}
-    contain = 5
-
-    obs_subset = pa.find_paths_containing_one_of(pathways, contain)
-    assert obs_subset == exp_subset
+@pytest.mark.parametrize("contain,exp", [(5, {(0,1,5,6,4)}),
+                                         ([5], {(0,1,5,6,4)}),
+                                         ([1, 5], {(0,1,5,6,4)}),
+                                         ([0, 3], {(0,1,2,3,4), (0,2,3,4)}),
+                                         ([5, 7], set()),
+                                         ([8], set()),
+                                         ([7,8], set()),
+                                         ([], set())])
+def test_find_paths_containing_all_int(contain, exp):
+    pathways = {(0,1,2,3,4), (0,2,3,4), (0,1,5,6,4), (0,1,7,4)}
     
+    obs = pa.find_paths_containing_all(pathways, contain)
+    assert obs == exp
 
-def test_find_paths_containing_one_of(data):
-    exp_subset = {("SourceA", "Facility", "SinkA"),
-                  ("SourceA", "Facility", "SinkB"),
-                  ("SourceB", "Facility", "SinkA")}
+
+@pytest.mark.parametrize("contain,exp", [("SourceA",
+                                         {("SourceA", "Facility", "SinkA"),
+                                         ("SourceA", "Facility", "SinkB")}),
+                                         (["SourceA", "SinkA"],
+                                         {("SourceA", "Facility", "SinkA"),
+                                         ("SourceA", "Facility", "SinkB"),
+                                         ("SourceB", "Facility", "SinkA")}),
+                                         (["SourceC"], set()),
+                                         ([], set())])
+def test_find_paths_containing_one_of(contain, exp):
     pathways = testdata[2][4]
-    contain = ["SourceA", "SinkA"]
 
-    obs_subset = pa.find_paths_containing_one_of(pathways, contain)
-    assert obs_subset == exp_subset
-
-
-def test_find_paths_containing_one_of_none(data):
-    exp_subset = set()
-    pathways = testdata[2][4]
-    contain = ["SourceC"]
-
-    obs_subset = pa.find_paths_containing_one_of(pathways, contain)
-    assert obs_subset == exp_subset
+    obs = pa.find_paths_containing_one_of(pathways, contain)
+    assert obs == exp
 
 
-def test_find_paths_containing_one_of_empty(data):
-    exp_subset = set()
-    pathways = testdata[2][4]
-    contain = []
+@pytest.mark.parametrize("contain,exp", [(5, {(0,1,5,6,4)}),
+                                         ([5], {(0,1,5,6,4)}),
+                                         ([5, 7], {(0,1,5,6,4),(0,1,7,4)}),
+                                         (8, set()),
+                                         ([8], set()),
+                                         ([7,8], {(0,1,7,4)}),
+                                         ([], set())])
+def test_find_paths_containing_one_of_int(contain, exp):
+    pathways = {(0,1,2,3,4), (0,2,3,4),(0,1,5,6,4), (0,1,7,4)}
 
-    obs_subset = pa.find_paths_containing_one_of(pathways, contain)
-    assert obs_subset == exp_subset
+    obs = pa.find_paths_containing_one_of(pathways, contain)
+    assert obs == exp
 
+    
 
 @pytest.mark.parametrize("name, short, long, edges, paths, sc", testdata)
 def test_get_shortest_path_length(name, short, long, edges, paths, sc):

@@ -49,10 +49,7 @@ def find_node_disjoint_paths(G, s, t):
 
 
 def is_multidigraph(G):
-    if G.is_directed() and G.is_multigraph():
-        return True
-    else:
-        return False
+    return (G.is_directed() and G.is_multigraph())
 
 
 def has_multiedges(G):
@@ -62,14 +59,9 @@ def has_multiedges(G):
     '''
     if is_multidigraph(G):
         H = nx.DiGraph(G)
-        if sorted(H.edges()) == sorted(G.edges()):
-            multiedges = False
-        else:
-            multiedges = True
+        return (sorted(H.edges()) != sorted(G.edges()))
     else:
-        multiedges = None
-
-    return multiedges
+        return None
 
 
 def transform_to_digraph(G):

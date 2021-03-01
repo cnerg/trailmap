@@ -4,7 +4,7 @@ import json
 import cyclus
 
 
-def build_commod_dictionary():
+def build_commod_dictionary(): #pragma: no cover
     '''Find all Cyclus archetypes and their commodity tags.
 
     outputs:
@@ -12,7 +12,9 @@ def build_commod_dictionary():
         and the names of their incommodities and outcommodities
     '''
     metadata = cyclus.lib.discover_metadata_in_cyclus_path()
-    archetype_commods = build_facility_dictionary(metadata)
+
+    archetypes = metadata["specs"]    
+    archetype_commods = build_facility_dictionary(metadata, archetypes)
 
     return archetype_commods
 
@@ -40,21 +42,11 @@ def get_commod_names(metadata, uitype, agent):
     return aliases
 
 
-def commodity_aliases(data, aliases):
-    '''Search for addional commodity aliases.'''
-    if isinstance(data, cyclus.jsoncpp.Value):
-        aliases.extend(data)
-    elif isinstance(data, str):
-        aliases.append(data)
-
-    return aliases
-
-
-def build_facility_dictionary(metadata):
+def build_facility_dictionary(metadata, archetypes):
     '''Identify commodities for each available archetype'''
     archetype_commods = {}
 
-    for archetype in metadata["specs"]:
+    for archetype in archetypes:
         incommods = get_commod_names(metadata["annotations"], "incommodity",
                                      archetype)
         outcommods = get_commod_names(metadata["annotations"], "outcommodity",

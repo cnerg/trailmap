@@ -43,7 +43,7 @@ def find_node_disjoint_paths(G, s, t):
         paths = list(nx.node_disjoint_paths(G, s, t))
         [ndp.add(tuple(path)) for path in paths]
     else:
-        print('source and/or target not in graph G!')
+        raise ValueError('Source and/or target not in graph G!')
 
     return ndp
 

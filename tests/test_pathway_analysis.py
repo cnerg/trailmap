@@ -25,14 +25,20 @@ def test_ndp():
     assert obs == exp
 
 
-def test_ndp_format():
-    exp = set()
+@pytest.mark.parametrize("source,target", [('import', 'heu_pu_collector'),
+                                        ('mine', 'export'),
+                                        ('import', 'export')])
+def test_ndp_raise_exception(source, target):
     G = nx.DiGraph()
-    G.add_node(0)
+    edges = [('mine', 'civ_enrich'), ('mine', 'mil_enrich'),
+             ('civ_enrich', 'heu_pu_collector'), ('civ_enrich', 'reactor'),
+             ('reactor', 'reprocess'), ('reprocess', 'heu_pu_collector'),
+             ('mil_enrich', 'heu_pu_collector')]
+    G.add_edges_from(edges)
 
-    obs = pa.find_node_disjoint_paths(G, 0, 1)
-
-    assert obs == exp
+    with pytest.raises(ValueError) as excinfo:   
+        obj = pa.find_node_disjoint_paths(G, source, target)
+        assert 'Source and/or target not in graph G!' in str(excinfo.value)
 
 
 def test_is_multidigraph_true():

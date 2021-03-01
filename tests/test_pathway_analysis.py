@@ -252,7 +252,7 @@ def test_find_pathway_flow_no_capacity():
     G = nx.DiGraph()
     edges = [(0,1), (1,2), (2,3)]
     G.add_edges_from(edges)
-    path = (0,1,2,3)
+    path = (0, 1, 2, 3)
 
     with pytest.raises(nx.exception.NetworkXUnbounded) as excinfo:   
         obj = pa.find_pathway_flow(G, path) 
@@ -265,7 +265,7 @@ def test_find_pathway_flow_single_infinite():
              (1, 2, {'capacity': inf}),
              (2, 3, {'capacity': 3})]
     G.add_edges_from(edges)
-    path = (0,1,2,3)
+    path = (0, 1, 2, 3)
     obs = pa.find_pathway_flow(G, path)
 
     exp = 3
@@ -279,7 +279,7 @@ def test_find_pathway_flow_all_infinite():
              (1, 2, {'capacity': inf}),
              (2, 3, {'capacity': inf})]
     G.add_edges_from(edges)
-    path = (0,1,2,3)
+    path = (0, 1, 2, 3)
 
     with pytest.raises(nx.exception.NetworkXUnbounded) as excinfo:   
         obj = pa.find_pathway_flow(G, path) 
@@ -288,17 +288,25 @@ def test_find_pathway_flow_all_infinite():
 
 def test_find_pathway_flow_multiedges():
     G = nx.MultiDiGraph()
-    edges = [(0,1),(1,2), (1,2), (2,3)]
+    edges = [(0,1), (1,2), (1,2), (2,3)]
     G.add_edges_from(edges)
-    pathway = (0,1,2,3)
+    pathway = (0, 1, 2, 3)
 
-    #exp = None
+    with pytest.raises(TypeError) as excinfo:
+        obs = pa.find_pathway_flow(G, pathway)
+        assert 'Graph must be DiGraph type. Use' in str(excinfo)
+
+
+def test_find_pathway_flow_other_type():
+    G = nx.Graph()
+    edges = [(0,1), (1,2), (2,3)]
+    G.add_edges_from(edges)
+    pathway = (0, 1, 2, 3)
 
     with pytest.raises(TypeError) as excinfo:
         obs = pa.find_pathway_flow(G, pathway)
         assert 'Graph must be DiGraph type' in str(excinfo)
 
-    #assert obs == exp
 
 @pytest.mark.parametrize("steps,exp", [(('FacilityA', 'FacilityB'), True),
                                        (('FacilityA', 'Sink'), False)])
@@ -307,12 +315,21 @@ def test_check_if_sublist(steps,exp):
     sub_list, pos = pa.check_if_sublist(path, steps)
     assert sub_list == exp
 
+
 @pytest.mark.parametrize("steps,exp", [(('FacilityA', 'FacilityB'), 1),
                                        (('FacilityA', 'Sink'), -1)])
 def test_check_if_sublist_pos(steps,exp):
     path = ('Source', 'FacilityA', 'FacilityB', 'Sink')
     sub_list, pos = pa.check_if_sublist(path, steps)
     assert pos == exp
+
+
+@pytest.mark.parametrize("path,steps", [(('Source', 'FacilityA', 'FacilityB',
+                                          'Sink'), ()),
+                                         ((), ('FacilityA', 'Sink'))])
+def test_check_if_sublist_failure(path, steps):
+    sub_list, pos = pa.check_if_sublist(path, steps)
+    assert sub_list == False and pos == -1
 
 
 @pytest.mark.parametrize("cycle,exp", [([3, 4, 7], (7, 3, 4)),
@@ -408,6 +425,13 @@ def test_get_pathways_with_cycles_loop():
     assert obs == exp
 
 
+def test_get_pathways_with_cycles_none():
+    pathways = []
+    obs = pa.get_pathways_with_cycles(pathways, [[2, 1]])
+
+    assert obs == set()
+
+
 @pytest.fixture
 def data():
     return testdata
@@ -425,6 +449,13 @@ def test_find_paths_with_source(source,exp):
     assert obs_subset == exp
 
 
+def test_find_paths_with_source_none():
+    pathways = []
+    obs = pa.find_paths_with_source(pathways, "SourceA")
+
+    assert obs == set()
+
+
 @pytest.mark.parametrize("sink,exp", [("SinkB",
                                       {("SourceA", "Facility", "SinkB"),
                                       ("SourceB", "Facility", "SinkB")}),
@@ -435,6 +466,13 @@ def test_find_paths_with_sink(sink,exp):
 
     obs_subset = pa.find_paths_with_sink(pathways, sink)
     assert obs_subset == exp
+
+
+def test_find_paths_with_sink_none():
+    pathways = []
+    obs = pa.find_paths_with_sink(pathways, "SinkA")
+
+    assert obs == set()
 
 
 @pytest.mark.parametrize("contain,exp", [("SourceB", 
@@ -464,6 +502,13 @@ def test_find_paths_containing_all_int(contain, exp):
     
     obs = pa.find_paths_containing_all(pathways, contain)
     assert obs == exp
+
+
+def test_find_paths_containing_all_none():
+    pathways = []
+    obs = pa.find_paths_containing_all(pathways, "SinkA")
+
+    assert obs == set()
 
 
 @pytest.mark.parametrize("contain,exp", [("SourceA",

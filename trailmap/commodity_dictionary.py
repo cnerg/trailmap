@@ -4,14 +4,18 @@ import json
 import cyclus
 
 
-def build_commod_dictionary(): #pragma: no cover
+def build_commod_dictionary(metadata_file = None): #pragma: no cover
     '''Find all Cyclus archetypes and their commodity tags.
 
     outputs:
     - archetype_commods: a dictionary with the Cyclus archetypes available
         and the names of their incommodities and outcommodities
     '''
-    metadata = cyclus.lib.discover_metadata_in_cyclus_path()
+    if metadata_file is None:
+        print('generating metadata')
+        metadata = cyclus.lib.discover_metadata_in_cyclus_path()
+    else: 
+        metadata = json.load(metadata_file)
 
     archetypes = metadata["specs"]    
     archetype_commods = build_facility_dictionary(metadata, archetypes)

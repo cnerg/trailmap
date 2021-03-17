@@ -59,3 +59,4 @@ def test_build_facility_dictionary_subset():
             ':cycamore:Storage': (['in_commods'], ['out_commods'])}
 
     assert cd.build_facility_dictionary(metadata, archetypes) == exp
+    

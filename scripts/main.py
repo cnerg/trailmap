@@ -18,6 +18,8 @@ def make_parser():
                    default='trailmap.gpickle',
                    help='output path for pickled graph')
     p.add_argument('--supress-print', '-sp', action='store_true')
+    p.add_argument('--metadata', '-m', nargs=1, help='Cyclus metadata file',
+                   type=argparse.FileType('r'))
 
     return p
 
@@ -27,7 +29,12 @@ def main(args=None):
     p = make_parser()
     ns = p.parse_args(args=args)
 
-    commodity_dictionary = cd.build_commod_dictionary()
+    if ns.metadata:
+        m = ns.metadata[0]
+        print(m["specs"])
+        commodity_dictionary = cd.build_commod_dictionary(ns.metadata[0])
+    else:
+        commodity_dictionary = cd.build_commod_dictionary()
     (facility_dict_in,
     facility_dict_out) = pi.parse_input(ns.infile[0], commodity_dictionary)
     (G, pathways) = ap.conduct_apa(facility_dict_in, facility_dict_out)

@@ -78,7 +78,7 @@ def test_is_multidigraph_multigraph():
 
 
 def test_has_multiedges_true():
-    exp = 1
+    exp = True
     G = nx.MultiDiGraph()
     G.add_edge('a', 'b')
     G.add_edge('a', 'b')
@@ -88,7 +88,7 @@ def test_has_multiedges_true():
 
 
 def test_has_multiedges_false():
-    exp = 0
+    exp = False
     G = nx.MultiDiGraph()
     G.add_edge('a', 'b')
     G.add_edge('a', 'c')
@@ -128,6 +128,7 @@ def test_transform_to_digraph_unsafe():
     (obs_H, obs_safe) = pa.transform_to_digraph(G)
 
     assert obs_safe == exp
+
 
 @pytest.mark.parametrize("G,exp", [(nx.Graph(), None), 
                                    (nx.DiGraph(), None),
@@ -432,7 +433,6 @@ def test_get_pathways_with_cycles_none():
     assert obs == set()
 
 
-@pytest.fixture
 def data():
     return testdata
 

@@ -13,13 +13,14 @@ def print_graph_parameters(G, pathways): # pragma: no cover
     num_paths = len(pathways)
     print("A total of " + str(num_paths) + " pathways were generated")
 
-    (shortest_length, shortest) = get_shortest_path(pathways)
-    (longest_length, longest) = get_longest_path(pathways)
+    shortest = get_shortest_path(pathways)
+
+    longest = get_longest_path(pathways)
 
     print("\nThe shortest pathway is length " + str(shortest_length))
-    print("pathways with this length are " + str(shortest))
+    print("pathways with this length are " + str(len(shortest.pop())))
 
-    print("\nGraph depth is " + str(longest_length))
+    print("\nGraph depth is " + str(len(longest.pop())))
     print("pathways with this length are " + str(longest))
 
     semiconnected = nx.is_semiconnected(G)
@@ -76,8 +77,10 @@ def transform_to_digraph(G):
             safe = False
         H = nx.DiGraph(G)
         return H, safe
+    elif G.is_directed():
+        return G, True
     else:
-        return None, None
+        return None, False
 
 
 def find_maximum_flow(H, s, t):
@@ -127,14 +130,13 @@ def find_simple_cycles(G): # pragma: no cover
 
 def check_if_sublist(path, list_of_steps):
     '''Checks to see if a pathway contains each element in steps (list)
-    in order. Returns True/False and the position where the steps begin. If
-    False, returns position -1.
+    in order. Returns the position where the steps begin. If False, returns
+    position -1.
     '''
     pos = -1
-    sub_list = False
 
     if len(path) is 0 or len(list_of_steps) is 0:
-        return sub_list, pos
+        return pos
 
     for i in range(len(path) - len(list_of_steps)+1):
         if path[i] == list_of_steps[0]:
@@ -142,11 +144,10 @@ def check_if_sublist(path, list_of_steps):
             while (n < len(list_of_steps) and path[i+n] == list_of_steps[n]):
                 n+=1
             if n == len(list_of_steps):
-                sub_list = True
                 pos = i
                 break
 
-    return sub_list, pos
+    return pos
 
 
 def roll_cycle(path, cycle):
@@ -258,13 +259,12 @@ def get_shortest_path(pathways):
     target. Returns a tuple with path and length.
     '''
     if len(pathways) is not 0:
-        shortest_length = min([len(path) for path in pathways])
-        shortest = set([path for path in pathways if len(path) == shortest_length])
+        short_len = min([len(path) for path in pathways])
+        shortest = set([path for path in pathways if len(path) == short_len])
     else:
         shortest = set()
-        shortest_length = 0
 
-    return shortest_length, shortest
+    return shortest
 
 
 def get_longest_path(pathways):
@@ -272,13 +272,12 @@ def get_longest_path(pathways):
     target. Returns a tuple with path and length.
     '''
     if len(pathways) is not 0:
-        longest_length = max([len(path) for path in pathways])
-        longest = set([path for path in pathways if len(path) == longest_length])
+        long_len = max([len(path) for path in pathways])
+        longest = set([path for path in pathways if len(path) == long_len])
     else:
         longest = set()
-        longest_length = 0
 
-    return longest_length, longest
+    return longest
 
 
 def get_sources(G):

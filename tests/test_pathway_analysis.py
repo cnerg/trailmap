@@ -119,9 +119,9 @@ def test_transform_to_digraph():
     assert obs == exp
 
 
-def test_transform_to_digraph_unsafe():
+@pytest.mark.parametrize("G", [(nx.Graph()), (nx.MultiGraph())])
+def test_transform_to_digraph_unsafe(G):
     exp = False
-    G = nx.MultiDiGraph()
     G.add_edge('a', 'b')
     G.add_edge('a', 'b')
 
@@ -131,7 +131,6 @@ def test_transform_to_digraph_unsafe():
 
 
 @pytest.mark.parametrize("G,exp", [(nx.Graph(), None), 
-                                   (nx.DiGraph(), None),
                                    (nx.MultiGraph(), None)])
 def test_transform_to_digraph_formats(G, exp):
     G.add_edge('a', 'b')
@@ -140,9 +139,9 @@ def test_transform_to_digraph_formats(G, exp):
     assert obs_H == exp
 
 
-@pytest.mark.parametrize("G,exp", [(nx.Graph(), None), 
-                                   (nx.DiGraph(), None),
-                                   (nx.MultiGraph(), None),
+@pytest.mark.parametrize("G,exp", [(nx.Graph(), False), 
+                                   (nx.DiGraph(), True),
+                                   (nx.MultiGraph(), False),
                                    (nx.MultiDiGraph(), True)])
 def test_transform_to_digraph_formats_is_safe(G, exp):
     G.add_edge('a', 'b')
@@ -309,28 +308,12 @@ def test_find_pathway_flow_other_type():
         assert 'Graph must be DiGraph type' in str(excinfo)
 
 
-@pytest.mark.parametrize("steps,exp", [(('FacilityA', 'FacilityB'), True),
-                                       (('FacilityA', 'Sink'), False)])
-def test_check_if_sublist(steps,exp):
-    path = ('Source', 'FacilityA', 'FacilityB', 'Sink')
-    sub_list, pos = pa.check_if_sublist(path, steps)
-    assert sub_list == exp
-
-
 @pytest.mark.parametrize("steps,exp", [(('FacilityA', 'FacilityB'), 1),
                                        (('FacilityA', 'Sink'), -1)])
-def test_check_if_sublist_pos(steps,exp):
+def test_check_if_sublist(steps,exp):
     path = ('Source', 'FacilityA', 'FacilityB', 'Sink')
-    sub_list, pos = pa.check_if_sublist(path, steps)
+    pos = pa.check_if_sublist(path, steps)
     assert pos == exp
-
-
-@pytest.mark.parametrize("path,steps", [(('Source', 'FacilityA', 'FacilityB',
-                                          'Sink'), ()),
-                                         ((), ('FacilityA', 'Sink'))])
-def test_check_if_sublist_failure(path, steps):
-    sub_list, pos = pa.check_if_sublist(path, steps)
-    assert sub_list == False and pos == -1
 
 
 @pytest.mark.parametrize("cycle,exp", [([3, 4, 7], (7, 3, 4)),
@@ -540,47 +523,32 @@ def test_find_paths_containing_one_of_int(contain, exp):
     obs = pa.find_paths_containing_one_of(pathways, contain)
     assert obs == exp
 
-    
-
-@pytest.mark.parametrize("name, short, long, edges, paths, sc", testdata)
-def test_get_shortest_path_length(name, short, long, edges, paths, sc):
-    (obs_length, obs) = pa.get_shortest_path(paths)
-
-    assert obs_length == short
-
 
 def test_get_shortest_path_length_none():
     pathways = {}
-    exp_length = 0
-    (obs_length, obs) = pa.get_shortest_path(pathways)
+    exp = set()
+    obs = pa.get_shortest_path(pathways)
 
-    assert obs_length == exp_length
+    assert obs == exp
 
 
 @pytest.mark.parametrize("name, short, long, edges, paths, sc", testdata)
 def test_get_shortest_paths(name, short, long, edges, paths, sc):
     exp = {path for path in paths if len(path) == short}
-    (obs_length, obs) = pa.get_shortest_path(paths)
+    obs = pa.get_shortest_path(paths)
+    assert obs == exp
+
+
+def test_get_longest_path_length_none():
+    pathways = {}
+    exp = set()
+    obs = pa.get_longest_path(pathways)
+
     assert obs == exp
 
 
 @pytest.mark.parametrize("name, short, long, edges, paths, sc", testdata)
 def test_get_longest_paths(name, short, long, edges, paths, sc):
-    (obs_length, obs) = pa.get_longest_path(paths)
-
-    assert obs_length == long
-
-
-def test_get_longest_path_length_none():
-    pathways = {}
-    exp_length = 0
-    (obs_length, obs) = pa.get_longest_path(pathways)
-
-    assert obs_length == exp_length
-
-
-@pytest.mark.parametrize("name, short, long, edges, paths, sc", testdata)
-def test_get_longest_paths(name, short, long, edges, paths, sc):
     exp = {path for path in paths if len(path) == long}
-    (obs_length, obs) = pa.get_longest_path(paths)
+    obs = pa.get_longest_path(paths)
     assert obs == exp

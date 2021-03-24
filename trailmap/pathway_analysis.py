@@ -14,13 +14,12 @@ def print_graph_parameters(G, pathways): # pragma: no cover
     print("A total of " + str(num_paths) + " pathways were generated")
 
     shortest = get_shortest_path(pathways)
-
     longest = get_longest_path(pathways)
 
-    print("\nThe shortest pathway is length " + str(shortest_length))
-    print("pathways with this length are " + str(len(shortest.pop())))
+    print("\nThe shortest pathway is length " + str(len(next(iter(shortest)))))
+    print("pathways with this length are " + str(shortest))
 
-    print("\nGraph depth is " + str(len(longest.pop())))
+    print("\nGraph depth is " + str(len(next(iter(longest)))))
     print("pathways with this length are " + str(longest))
 
     semiconnected = nx.is_semiconnected(G)

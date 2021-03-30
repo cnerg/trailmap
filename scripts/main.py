@@ -31,7 +31,6 @@ def main(args=None):
 
     if ns.metadata:
         m = ns.metadata[0]
-        print(m["specs"])
         commodity_dictionary = cd.build_commod_dictionary(ns.metadata[0])
     else:
         commodity_dictionary = cd.build_commod_dictionary()

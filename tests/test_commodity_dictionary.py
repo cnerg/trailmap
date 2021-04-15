@@ -24,6 +24,31 @@ def test_commod_names_outcomodity():
                                                       ":cycamore:Reactor")
 
 
+@pytest.mark.parametrize("l,uitype,path", [("outcommodity", "incommodity", 
+                                            None),
+                                           (['oneormore', ['pair', ['pair',
+                                             'double', 'double'],['oneormore',
+                                             'incommodity','double']]],
+                                             'incommodity',[1, 2, 1])
+                                       ])
+def test_search_var_recursive(l, uitype, path):
+
+    assert path == cd.search_var_recursive(l, uitype)
+
+
+@pytest.mark.parametrize("data,p,alias", [(['in_streams', ['stream', ['info',
+                                           'mixing_ratio', 'buf_size'],
+                                           [['commodities', 'item'], 
+                                           'commodity', 'pref']]], [1, 2, 1],
+                                           'commodity'),
+                                          (['a', [['b', 'c'], 'd']], [1, 0,
+                                          0], 'b')
+                                         ])
+def test_find_alias(data, p, alias):
+
+    assert alias == cd.find_alias(data, p)
+
+
 def test_build_facility_dictionary():
     exp = {':agents:KFacility': (['in_commod'], ['out_commod']),
            ':agents:NullInst': ([], []),
@@ -39,12 +64,12 @@ def test_build_facility_dictionary():
                                   'topup_commod'], ['outcommod']),
            ':cycamore:GrowthRegion': ([], []),
            ':cycamore:ManagerInst': ([], []),
-           ':cycamore:Mixer': ([], ['out_commod']),
+           ':cycamore:Mixer': (['commodity'], ['out_commod']),
            ':cycamore:Reactor': (['fuel_incommods', 'pref_change_commods',
                                   'recipe_change_commods'],
                                  ['fuel_outcommods']),
            ':cycamore:Separations': (['feed_commods'], ['leftover_commod',
-                                      'streams_']),
+                                      'commod']),
            ':cycamore:Sink': (['in_commods'], []),
            ':cycamore:Source': ([], ['outcommod']),
            ':cycamore:Storage': (['in_commods'], ['out_commods'])}

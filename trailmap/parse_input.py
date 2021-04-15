@@ -49,19 +49,27 @@ def get_facility_and_commod_names(root, input_archetypes,
         facility_archetype = facility.find('config/').tag
         facility_module = input_archetypes[facility_archetype]
 
-        (in_tags, out_tags) = commodity_dictionary[facility_module]
+        if facility_module == ':cycamore:Separations':
+            (facility_in_commods,
+             facility_out_commods) = find_sep_commod(facility,
+                                                     facility_archetype)
+        elif facility_module == ':cycamore:Mixer':
+            (facility_in_commods,
+             facility_out_commods) = find_mixer_commod(facility,
+                                                       facility_archetype)
+        else:
+            (in_tags, out_tags) = commodity_dictionary[facility_module]
+            facility_in_commods = []
+            facility_out_commods = []
 
-        facility_in_commods = []
-        facility_out_commods = []
+            for archetype_var in facility.find('.config/'+facility_archetype):
+                in_commods = find_commod(archetype_var, in_tags)
+                if in_commods is not None:
+                    facility_in_commods.extend(in_commods)
 
-        for archetype_var in facility.find('.config/' + facility_archetype):
-            in_commods = find_commod(archetype_var, in_tags)
-            if in_commods is not None:
-                facility_in_commods.extend(in_commods)
-
-            out_commods = find_commod(archetype_var, out_tags)
-            if out_commods is not None:
-                facility_out_commods.extend(out_commods)
+                out_commods = find_commod(archetype_var, out_tags)
+                if out_commods is not None:
+                    facility_out_commods.extend(out_commods)
 
         facility_dict_in[facility_name] = facility_in_commods
         facility_dict_out[facility_name] = facility_out_commods
@@ -112,3 +120,46 @@ def find_commod(archetype_tag, commod_tags):
         return commod_list
 
     return commod_list
+
+
+def find_sep_commod(facility, facility_archetype):
+    '''Searches for commodities within a Separations facility, which uses a
+    different xml schema than other Cyclus archetypes
+    '''
+    in_tags = ['feed_commods']
+    leftover_tags = ['leftover_commod']
+
+    facility_in_commods = []
+    facility_out_commods = []
+
+    for archetype_var in facility.find('.config/' + facility_archetype):
+        in_commods = find_commod(archetype_var, in_tags)
+        if in_commods is not None:
+            facility_in_commods.extend(in_commods)
+        if archetype_var.tag == 'streams':
+            for commod in archetype_var.findall('./item/commod'):
+                facility_out_commods.append(commod.text)
+        out_commods = find_commod(archetype_var, leftover_tags)
+        if out_commods is not None:
+            facility_out_commods.extend(out_commods)
+
+    return facility_in_commods, facility_out_commods
+
+
+def find_mixer_commod(facility, facility_archetype):
+    '''Searches for commodities within a Mixer facility, which uses a
+    different xml schema than other Cyclus archetypes
+    '''
+    out_tags = ['out_commod']
+    facility_in_commods = []
+    facility_out_commods = []
+
+    for archetype_var in facility.find('.config/' + facility_archetype):
+        if archetype_var.tag == 'in_streams':
+            for commod in archetype_var.findall('./stream/commodities/item/commodity'):
+                facility_in_commods.append(commod.text)
+        out_commods = find_commod(archetype_var, out_tags)
+        if out_commods is not None:
+            facility_out_commods.extend(out_commods)
+
+    return facility_in_commods, facility_out_commods

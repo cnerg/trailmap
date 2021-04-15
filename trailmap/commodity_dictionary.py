@@ -54,7 +54,6 @@ def get_commod_names(metadata, uitype, agent):
             aliases.remove("val")
     except:
         pass
-
     try:
         while True:
             aliases.remove('streams_')

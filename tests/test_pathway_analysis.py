@@ -577,7 +577,7 @@ def test_get_longest_paths(name, short, long, edges, paths, sc):
 
 
 def test_sort_shortest():
-    pathways = {(2 3), (3, 4, 7, 4, 3, 32, 3), (10000, 10000, 0)}
+    pathways = {(2, 3), (3, 4, 7, 4, 3, 32, 3), (10000, 10000, 0)}
     exp = [(2, 3), (10000, 10000, 0), (3, 4, 7, 4, 3, 32, 3)]
 
     obs = pa.sort_by_shortest(pathways)
@@ -585,7 +585,7 @@ def test_sort_shortest():
 
 
 def test_sort_longest():
-    pathways = {(2 3), (3, 4, 7, 4, 3, 32, 3), (10000, 10000, 0)}
+    pathways = {(2, 3), (3, 4, 7, 4, 3, 32, 3), (10000, 10000, 0)}
     exp = [(3, 4, 7, 4, 3, 32, 3), (10000, 10000, 0), (2, 3)]
 
     obs = pa.sort_by_longest(pathways)

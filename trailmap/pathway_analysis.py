@@ -5,7 +5,7 @@ from more_itertools import pairwise
 from collections import Counter
 
 
-def print_graph_parameters(G, pathways): # pragma: no cover
+def print_graph_parameters(G, pathways):  # pragma: no cover
     '''Prints a set of parameters characterizing the graph
     '''
     print('\nGRAPH PARAMETERS')
@@ -85,7 +85,7 @@ def transform_to_digraph(G):
 def find_maximum_flow(H, s, t):
     '''Finds maximum flow between a source and target node in DiGraph G.
     Requires edge attribute 'capacity'. MultiDiGraphs not supported.
-    '''    
+    '''
     if type(H) == nx.classes.digraph.DiGraph:
         max_flow_path = nx.maximum_flow(H, s, t)
         max_flow = nx.maximum_flow_value(H, s, t)
@@ -97,7 +97,7 @@ def find_maximum_flow(H, s, t):
 
 
 def find_pathway_flow(H, pathway):
-    '''returns the maximum permissible flow for a given pathway in DiGraph G. 
+    '''returns the maximum permissible flow for a given pathway in DiGraph G.
     Any edge without 'capacity' attribute will be given infinite capacity.
     MultiDiGraphs not supported.
     '''
@@ -109,7 +109,7 @@ def find_pathway_flow(H, pathway):
         sinks = get_sinks(H_sg)
 
         path_flow = nx.maximum_flow_value(H_sg, sources[0], sinks[0])
-            
+
         return path_flow
 
     elif type(H) == nx.classes.multidigraph.MultiDiGraph:
@@ -120,7 +120,7 @@ def find_pathway_flow(H, pathway):
         raise TypeError('Graph must be DiGraph type.')
 
 
-def find_simple_cycles(G): # pragma: no cover
+def find_simple_cycles(G):  # pragma: no cover
     '''finds cycles in a graph and returns them in a list of lists.
     '''
     sc = list(nx.simple_cycles(G))
@@ -141,7 +141,7 @@ def check_if_sublist(path, list_of_steps):
         if path[i] == list_of_steps[0]:
             n = 1
             while (n < len(list_of_steps) and path[i+n] == list_of_steps[n]):
-                n+=1
+                n += 1
             if n == len(list_of_steps):
                 pos = i
                 break
@@ -167,7 +167,7 @@ def roll_cycle(path, cycle):
 def insert_cycles(pathway, rolled_cycles):
     '''Inserts already-rolled cycles as a tuple into a path
     '''
-    path=list(pathway)
+    path = list(pathway)
     for rc in rolled_cycles:
         path.insert(path.index(rc[0]), rc)
     path_with_cycles = tuple(path)
@@ -188,7 +188,7 @@ def get_pathways_with_cycles(pathways, sc):
             rolled_cycle = roll_cycle(path, cycle)
             if rolled_cycle:
                 rolled_cycles.add(rolled_cycle)
-        
+
         # record all the pathways that have cycles, insert single cycle
         if rolled_cycles:
             pathways_with_cycles.add(insert_cycles(path, rolled_cycles))
@@ -202,7 +202,7 @@ def find_paths_with_source(pathways, source):
     if len(pathways) is 0:
         return set()
 
-    subset_pathways = set([ path for path in pathways if path[0] == source])
+    subset_pathways = set([path for path in pathways if path[0] == source])
     return subset_pathways
 
 
@@ -211,8 +211,8 @@ def find_paths_with_sink(pathways, sink):
     '''
     if len(pathways) is 0:
         return set()
-    
-    subset_pathways = set([ path for path in pathways if path[-1] == sink])
+
+    subset_pathways = set([path for path in pathways if path[-1] == sink])
     return subset_pathways
 
 
@@ -225,7 +225,7 @@ def find_paths_containing_all(pathways, facilities):
     # convert to list if user passed a string or int
     if type(facilities) == int or type(facilities) == str:
         facilities = [facilities]
-    
+
     # if user passed an empty list, return no pathways
     if not facilities:
         return set()
@@ -254,10 +254,10 @@ def find_paths_containing_one_of(pathways, facilities):
 
 
 def get_shortest_path(pathways):
-    '''Finds the set of pathways with the shortest number of steps from source to
-    target. Returns a tuple with path and length.
+    '''Finds the set of pathways with the shortest number of steps from source
+    to target. Returns a tuple with path and length.
     '''
-    #check that there are no single-item pathways
+    # check that there are no single-item pathways
     check_for_invalid_pathways(pathways)
 
     if len(pathways) is not 0:
@@ -273,9 +273,9 @@ def get_longest_path(pathways):
     '''Finds the pathway with the longest number of steps from source to
     target. Returns a tuple with path and length.
     '''
-    #check that there are no single-item pathways
+    # check that there are no single-item pathways
     check_for_invalid_pathways(pathways)
-    
+
     if len(pathways) is not 0:
         long_len = max([len(path) for path in pathways])
         longest = set([path for path in pathways if len(path) == long_len])
@@ -302,7 +302,7 @@ def get_sinks(G):
 def sort_by_shortest(pathways):
     '''Returns the pathways sorted from shortest to longest
     '''
-    #check that there are no single-item pathways
+    # check that there are no single-item pathways
     check_for_invalid_pathways(pathways)
     return sorted(list(pathways), key=len)
 
@@ -310,7 +310,7 @@ def sort_by_shortest(pathways):
 def sort_by_longest(pathways):
     '''Returns the pathways sorted from shortest to longest
     '''
-    #check that there are no single-item pathways
+    # check that there are no single-item pathways
     check_for_invalid_pathways(pathways)
     return sorted(list(pathways), key=len, reverse=True)
 
@@ -319,8 +319,8 @@ def check_for_invalid_pathways(pathways):
     '''checks if pathways contains any errors, such as having single-value
     pathways, such as ('facility')
     '''
-    if any([isinstance(i,(int,float,str)) for i in pathways]):
-        raise TypeError('pathways contains pathway(s) with only one facility'\
-                         ". All pathways should include at least two items")
+    if any([isinstance(i, (int, float, str)) for i in pathways]):
+        raise TypeError('pathways contains pathway(s) with only one facility'
+                        ". All pathways should include at least two items")
 
     return

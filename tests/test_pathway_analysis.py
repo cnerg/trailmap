@@ -119,6 +119,18 @@ def test_transform_to_digraph():
     assert obs == exp
 
 
+def test_transform_to_digraph_has_multiedges():
+    G = nx.MultiDiGraph()
+    G.add_edge('a', 'b')
+    G.add_edge('a', 'b')
+    exp = False
+
+    (obs_H, obs_safe) = pa.transform_to_digraph(G)
+
+    assert obs_safe == exp
+
+
+
 @pytest.mark.parametrize("G", [(nx.Graph()), (nx.MultiGraph())])
 def test_transform_to_digraph_unsafe(G):
     exp = False
@@ -311,6 +323,14 @@ def test_find_pathway_flow_other_type():
 @pytest.mark.parametrize("steps,exp", [(('FacilityA', 'FacilityB'), 1),
                                        (('FacilityA', 'Sink'), -1)])
 def test_check_if_sublist(steps,exp):
+    path = ('Source', 'FacilityA', 'FacilityB', 'Sink')
+    pos = pa.check_if_sublist(path, steps)
+    assert pos == exp
+
+
+@pytest.mark.parametrize("path,steps,exp", [(('Source', 'Sink'),(), -1),
+                                       ((), ('Sink'), -1)])
+def test_check_if_sublist_len_zero(path,steps,exp):
     path = ('Source', 'FacilityA', 'FacilityB', 'Sink')
     pos = pa.check_if_sublist(path, steps)
     assert pos == exp
@@ -552,3 +572,41 @@ def test_get_longest_paths(name, short, long, edges, paths, sc):
     exp = {path for path in paths if len(path) == long}
     obs = pa.get_longest_path(paths)
     assert obs == exp
+
+
+def test_sort_shortest():
+    pathways = {(2,3), (3,4,7,4,3,32,3), (10000,10000,0)}
+    exp = [(2,3),(10000,10000,0),(3,4,7,4,3,32,3)]
+
+    obs = pa.sort_by_shortest(pathways)
+    assert obs == exp
+
+
+def test_sort_longest():
+    pathways = {(2,3), (3,4,7,4,3,32,3), (10000,10000,0)}
+    exp = [(3,4,7,4,3,32,3),(10000,10000,0),(2,3)]
+
+    obs = pa.sort_by_longest(pathways)
+    assert obs == exp
+
+
+@pytest.mark.parametrize("pathways", [{("a","b")},
+                                      {("a","b"),(1,"b")},
+                                      {(1,4)},
+                                      {(4,5), (6,5.9)},
+                                      {(6.3, "a")}])
+def test_check_for_invalid_pathways(pathways):
+    obs = pa.check_for_invalid_pathways(pathways)
+    assert obs == None
+
+
+@pytest.mark.parametrize("pathways", [{("a")},
+                                      {("a","b"),"c"},
+                                      {(1)},
+                                      {(4,5), 6},
+                                      {(6.3, "a"), 4.6},
+                                      {(5.3)}])
+def test_check_for_invalid_pathways_type_error(pathways):
+    with pytest.raises(TypeError) as excinfo:   
+        obj = pa.sort_by_longest(pathways)
+        assert 'pathways contains' in str(excinfo.value)

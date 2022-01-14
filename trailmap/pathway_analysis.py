@@ -257,6 +257,9 @@ def get_shortest_path(pathways):
     '''Finds the set of pathways with the shortest number of steps from source to
     target. Returns a tuple with path and length.
     '''
+    #check that there are no single-item pathways
+    check_for_invalid_pathways(pathways)
+
     if len(pathways) is not 0:
         short_len = min([len(path) for path in pathways])
         shortest = set([path for path in pathways if len(path) == short_len])
@@ -270,6 +273,9 @@ def get_longest_path(pathways):
     '''Finds the pathway with the longest number of steps from source to
     target. Returns a tuple with path and length.
     '''
+    #check that there are no single-item pathways
+    check_for_invalid_pathways(pathways)
+    
     if len(pathways) is not 0:
         long_len = max([len(path) for path in pathways])
         longest = set([path for path in pathways if len(path) == long_len])
@@ -291,3 +297,30 @@ def get_sinks(G):
     '''
     sinks = list(node for node, out_deg in G.out_degree() if out_deg == 0)
     return sinks
+
+
+def sort_by_shortest(pathways):
+    '''Returns the pathways sorted from shortest to longest
+    '''
+    #check that there are no single-item pathways
+    check_for_invalid_pathways(pathways)
+    return sorted(list(pathways), key=len)
+
+
+def sort_by_longest(pathways):
+    '''Returns the pathways sorted from shortest to longest
+    '''
+    #check that there are no single-item pathways
+    check_for_invalid_pathways(pathways)
+    return sorted(list(pathways), key=len, reverse=True)
+
+
+def check_for_invalid_pathways(pathways):
+    '''checks if pathways contains any errors, such as having single-value
+    pathways, such as ('facility')
+    '''
+    if any([isinstance(i,(int,float,str)) for i in pathways]):
+        raise TypeError('pathways contains pathway(s) with only one facility'\
+                         ". All pathways should include at least two items")
+
+    return

@@ -54,7 +54,7 @@ def is_multidigraph(G):
 
 def has_multiedges(G):
     '''Determines if graph G contains multiple edges between any pair of
-    nodes. Returns True, False, or None if the provided graph is not a
+    nodes. Returns True, False, or None if the provided graph != a
     NetworkX Multigraph.
     '''
     if is_multidigraph(G):
@@ -134,7 +134,7 @@ def check_if_sublist(path, list_of_steps):
     '''
     pos = -1
 
-    if len(path) is 0 or len(list_of_steps) is 0:
+    if len(path) == 0 or len(list_of_steps) == 0:
         return pos
 
     for i in range(len(path) - len(list_of_steps)+1):
@@ -178,7 +178,7 @@ def get_pathways_with_cycles(pathways, sc):
     '''For the given list of pathways and simple cycles, returns a set of
     pathways that could contain 1 or more cycles
     '''
-    if len(pathways) is 0:
+    if len(pathways) == 0:
         return set()
 
     pathways_with_cycles = set()
@@ -199,7 +199,7 @@ def get_pathways_with_cycles(pathways, sc):
 def find_paths_with_source(pathways, source):
     '''returns a subset of pathways that contain a given facility as the source
     '''
-    if len(pathways) is 0:
+    if len(pathways) == 0:
         return set()
 
     subset_pathways = set([ path for path in pathways if path[0] == source])
@@ -209,7 +209,7 @@ def find_paths_with_source(pathways, source):
 def find_paths_with_sink(pathways, sink):
     '''returns a subset of pathways that contain a given facility as the sink
     '''
-    if len(pathways) is 0:
+    if len(pathways) == 0:
         return set()
     
     subset_pathways = set([ path for path in pathways if path[-1] == sink])
@@ -219,7 +219,7 @@ def find_paths_with_sink(pathways, sink):
 def find_paths_containing_all(pathways, facilities):
     '''returns a subset of pathways that contain all facilities in input list
     '''
-    if len(pathways) is 0:
+    if len(pathways) == 0:
         return set()
 
     # convert to list if user passed a string or int
@@ -244,7 +244,7 @@ def find_paths_containing_one_of(pathways, facilities):
         facilities = [facilities]
 
     # if user passed an empty list, return no pathways
-    if len(pathways) is 0 or len(facilities) is 0:
+    if len(pathways) == 0 or len(facilities) == 0:
         return set()
 
     facilities = set(facilities)
@@ -257,7 +257,7 @@ def get_shortest_path(pathways):
     '''Finds the set of pathways with the shortest number of steps from source to
     target. Returns a tuple with path and length.
     '''
-    if len(pathways) is not 0:
+    if len(pathways) != 0:
         short_len = min([len(path) for path in pathways])
         shortest = set([path for path in pathways if len(path) == short_len])
     else:
@@ -270,7 +270,7 @@ def get_longest_path(pathways):
     '''Finds the pathway with the longest number of steps from source to
     target. Returns a tuple with path and length.
     '''
-    if len(pathways) is not 0:
+    if len(pathways) != 0:
         long_len = max([len(path) for path in pathways])
         longest = set([path for path in pathways if len(path) == long_len])
     else:

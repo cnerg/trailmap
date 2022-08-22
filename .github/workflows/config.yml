@@ -24,3 +24,4 @@ jobs:
           path-to-lcov: ./coverage.lcov
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - run: coverage report
+      - run: coverage html

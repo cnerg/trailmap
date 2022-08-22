@@ -2,7 +2,7 @@
 
 ### Project Status
 
-[![Coverage Status](https://coveralls.io/repos/github/CNERG/trailmap/badge.svg?branch=main)](https://coveralls.io/github/CNERG/trailmap?branch=main) 
+[![Coverage Status](https://coveralls.io/repos/github/bquan0/trailmap/badge.svg?branch=github-actions)](https://coveralls.io/github/bquan0/trailmap?branch=github-actions)
 [![CircleCI](https://circleci.com/gh/CNERG/trailmap.svg?style=shield)](https://circleci.com/gh/CNERG/trailmap) 
 ![GitHub issues](https://img.shields.io/github/issues/cnerg/trailmap)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/cnerg/trailmap)

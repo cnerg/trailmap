@@ -1,5 +1,9 @@
 name: run-trailmap-tests
-on: push
+on: 
+  push:
+  pull_request:
+    branches:
+      - main
 jobs: 
   test_py3:
     runs-on: ubuntu-latest
